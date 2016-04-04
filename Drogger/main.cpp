@@ -13,21 +13,28 @@
 #include <GL/glut.h>
 #endif
 
-#include <stdlib.h>
+
 #include <math.h>
 #include <string>
 #include <iostream>
-
+using namespace std;
+#include <stdlib.h>
+#include "ImageLoader.hpp"
 #include "glm.h"
+
+#include "SOIL.h"
 
 //Amount of models and model ids
 #define MODEL_COUNT 10
 #define PLAYER_MOD 0
-
-using namespace std;
+#define BUSSTOP_MOD 1
 
 /////////////
 string fullPath = __FILE__;
+using namespace std;
+
+static GLuint texName[36];
+const int TEXTURE_COUNT=7;
 
 GLMmodel models[MODEL_COUNT];
 
@@ -37,12 +44,19 @@ double i = 0;
 int angulo = 0;
 int enteroGlobal = 0;
 bool running = false;
-
+double posXPersonaje = 0, posYPersonaje = -130.0;
 
 
 bool finished = false;
 bool start = false;
 
+//le borramos el exceso para solo obtener el Path padre
+void getParentPath()
+{
+    for (int i = (int)fullPath.length()-1; i>=0 && fullPath[i] != '/'; i--) {
+        fullPath.erase(i,1);
+    }
+}
 
 void draw3dString (void *font, char *s, float x, float y, float z)
 {
@@ -64,11 +78,103 @@ void draw3dString (void *font, char *s, float x, float y, float z)
 
 void timer(int value)
 {
+    if (running) {
+        angulo = (angulo + 1) % 360;
+        cout << angulo << endl;
+    }
+        glutPostRedisplay();
+        glutTimerFunc(100, timer, 1); //el ultimo parametro es para control
     
-    angulo = (angulo + 10) % 360;
-    glutPostRedisplay();
-    glutTimerFunc(100, timer, 1); //el ultimo parametro es para control
+    
 }
+
+//Makes the image into a texture, and returns the id of the texture
+void loadTexture(Image* image,int k)
+{
+    
+    glBindTexture(GL_TEXTURE_2D, texName[k]); //Tell OpenGL which texture to edit
+    
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    
+    //Filtros de ampliacion y redución con cálculo mas cercano no es tan bueno pero es rápido
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+    
+    //Filtros de ampliacion y redución con cálculo lineal es mejo pero son más calculos
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+    
+    //Map the image to the texture
+    glTexImage2D(GL_TEXTURE_2D,                //Always GL_TEXTURE_2D
+                 0,                            //0 for now
+                 GL_RGB,                       //Format OpenGL uses for image
+                 image->width, image->height,  //Width and height
+                 0,                            //The border of the image
+                 GL_RGB, //GL_RGB, because pixels are stored in RGB format
+                 GL_UNSIGNED_BYTE, //GL_UNSIGNED_BYTE, because pixels are stored
+                 //as unsigned numbers
+                 image->pixels);               //The actual pixel data
+}
+
+int LoadGLTextures(const char* image, int i)
+{
+    texName[i] = SOIL_load_OGL_texture(image, SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_POWER_OF_TWO
+                                       | SOIL_FLAG_MIPMAPS
+                                       | SOIL_FLAG_MULTIPLY_ALPHA
+                                       | SOIL_FLAG_COMPRESS_TO_DXT
+                                       | SOIL_FLAG_DDS_LOAD_DIRECT
+                                       | SOIL_FLAG_INVERT_Y);
+    
+    if(texName[i] == 0){
+        cout <<"Not found" << endl;
+        return false;
+    }
+    glBindTexture(GL_TEXTURE_2D, texName[i]);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+    return true;
+}
+
+void initRendering()
+{
+    //Declaración del objeto Image
+    Image* image;
+    GLuint i=0;
+    
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_TEXTURE_2D);
+    glGenTextures(TEXTURE_COUNT, texName); //Make room for our texture
+    
+    
+    char  ruta[200];
+    sprintf(ruta,"%s%s", fullPath.c_str() , "textures/grass.bmp");
+    image = loadBMP(ruta);loadTexture(image,i++);
+    
+
+    sprintf(ruta,"%s%s", fullPath.c_str() , "textures/road.bmp");
+    image = loadBMP(ruta);loadTexture(image,i++);
+    
+    
+    sprintf(ruta,"%s%s", fullPath.c_str() , "textures/sand.bmp");
+    image = loadBMP(ruta);loadTexture(image,i++);
+    
+    
+    sprintf(ruta,"%s%s", fullPath.c_str() , "textures/heartfull.bmp");
+    LoadGLTextures(ruta,i++);
+    /*
+    sprintf(ruta,"%s%s", fullPath.c_str() , "textures/sand.bmp");
+    texName[3] = SOIL_load_OGL_texture // load an image file directly as a new OpenGL texture
+    (
+     ruta,
+     SOIL_LOAD_AUTO,
+     SOIL_CREATE_NEW_ID,
+     SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB | SOIL_FLAG_COMPRESS_TO_DXT
+     );
+*/
+    delete image;
+}
+
 
 void reshape(int w, int h)
 {
@@ -125,7 +231,30 @@ void dibujaCesped(double y,double height){
     glRotatef(0, 0.0, 1.0, 0.0);
     glRotatef(0, 0.0, 0.0, 1.0);
     glScalef(300, height, 0.1);
-    glutSolidCube(1);
+    
+    //Habilitar el uso de texturas
+    glEnable(GL_TEXTURE_2D);
+    
+    //Elegir la textura del Quads: angulo cambia con el timer
+    glBindTexture(GL_TEXTURE_2D, texName[0]);
+    
+    glBegin(GL_QUADS);
+    
+    //Asignar la coordenada de textura 0,0 al vertice
+    glTexCoord2f(0.0f, 0.0f);
+    glVertex3f(-0.5f, -1.0f, 0);
+    //Asignar la coordenada de textura 1,0 al vertice
+    glTexCoord2f(1.0f, 0.0f);
+    glVertex3f(0.5f, -1.0f, 0);
+    //Asignar la coordenada de textura 1,1 al vertice
+    glTexCoord2f(1.0f, 1.0f);
+    glVertex3f(0.5f, 0.3f, 0);
+    //Asignar la coordenada de textura 0,1 al vertice
+    glTexCoord2f(0.0f, 1.0f);
+    glVertex3f(-0.5f, 0.3f, 0);
+    
+    glEnd();
+    glDisable(GL_TEXTURE_2D);
     glPopMatrix();
     glutPostRedisplay();
 }
@@ -138,7 +267,29 @@ void dibujaAreaSegura(double y) {
     glRotatef(0, 0.0, 1.0, 0.0);
     glRotatef(0, 0.0, 0.0, 1.0);
     glScalef(300, 20.0, 0.1);
-    glutSolidCube(1);
+    
+    //Habilitar el uso de texturas
+    glEnable(GL_TEXTURE_2D);
+    //Elegir la textura del Quads: angulo cambia con el timer
+    glBindTexture(GL_TEXTURE_2D, texName[2]);
+    glBegin(GL_QUADS);
+    
+    //Asignar la coordenada de textura 0,0 al vertice
+    glTexCoord2f(0.0f, 0.0f);
+    glVertex3f(-0.5f, -1.0f, 0);
+    //Asignar la coordenada de textura 1,0 al vertice
+    glTexCoord2f(3.0f, 0.0f);
+    glVertex3f(0.5f, -1.0f, 0);
+    //Asignar la coordenada de textura 1,1 al vertice
+    glTexCoord2f(3.0f, 1.0f);
+    glVertex3f(0.5f, 0.3f, 0);
+    //Asignar la coordenada de textura 0,1 al vertice
+    glTexCoord2f(0.0f, 1.0f);
+    glVertex3f(-0.5f, 0.3f, 0);
+    
+    glEnd();
+    glDisable(GL_TEXTURE_2D);
+    
     glPopMatrix();
     glutPostRedisplay();
 }
@@ -151,65 +302,124 @@ void dibujaCalle(double y, double rayasY) {
     glRotatef(0, 0.0, 1.0, 0.0);
     glRotatef(0, 0.0, 0.0, 1.0);
     glScalef(300, 50.0, 0.1);
-    glutSolidCube(1);
-    glLineWidth(5);
-    glBegin(GL_LINES);
-    glColor3f(0.0f, rayasY, 0.0f);
-    glVertex3f(-0.35f, rayasY,2.0f);
-    glVertex3f(-0.25f, rayasY,2.0f);
+
+    //Habilitar el uso de texturas
+    glEnable(GL_TEXTURE_2D);
     
-    glVertex3f(-0.15f, rayasY,2.0f);
-    glVertex3f(-0.05f, rayasY,2.0f);
+    //Elegir la textura del Quads: angulo cambia con el timer
+    glBindTexture(GL_TEXTURE_2D, texName[1]);
     
-    glVertex3f(0.15f, rayasY,2.0f);
-    glVertex3f(0.05f, rayasY,2.0f);
+    glBegin(GL_QUADS);
+    float roadw = -0.5f;
+    for (int i=0;i<4; i++) {
+        
+        //Asignar la coordenada de textura 0,0 al vertice
+        glTexCoord2f(1.0f, 1.0f);
+        glVertex3f(roadw, -0.62f, 0);
+        //Asignar la coordenada de textura 1,0 al vertice
+        glTexCoord2f(1.0f, 0.0f);
+        glVertex3f(roadw+0.25, -0.62f, 0);
+        //Asignar la coordenada de textura 1,1 al vertice
+        glTexCoord2f(0.0f, 0.0f);
+        glVertex3f(roadw+0.25, 0.3f, 0);
+        //Asignar la coordenada de textura 0,1 al vertice
+        glTexCoord2f(0.0f, 1.0f);
+        glVertex3f(roadw, 0.3f, 0);
+        roadw += 0.25;
+    }
     
-    glVertex3f(0.25f, rayasY,2.0f);
-    glVertex3f(0.35f, rayasY,2.0f);
-    
-    glVertex3f(-0.35f, rayasY+0.3f,2.0f);
-    glVertex3f(-0.25f, rayasY+0.3f,2.0f);
-    
-    glVertex3f(-0.15f, rayasY+0.3f,2.0f);
-    glVertex3f(-0.05f, rayasY+0.3f,2.0f);
-    
-    glVertex3f(0.15f, rayasY+0.3f,2.0f);
-    glVertex3f(0.05f, rayasY+0.3f,2.0f);
-    
-    glVertex3f(0.25f, rayasY+0.3f,2.0f);
-    glVertex3f(0.35f, rayasY+0.3f,2.0f);
     glEnd();
+    
+    
+    glDisable(GL_TEXTURE_2D);
+
     glPopMatrix();
 
     glutPostRedisplay();
 }
 
-void dibujaPersonaje() {
+void dibujaPersonaje(double posX, double posY) {
+    posXPersonaje = posX;
+    posYPersonaje = posY;
+    glClear(GL_DEPTH_BUFFER_BIT); // Se usa para limpiar buffer depth (que los modelos se pongan enfrente de todo)
     glPushMatrix();
-    glTranslated(5, 5, 0);
-    glRotated(angulo, 0, 1, 0);
-    glScaled(50, 50, 5);
+    glTranslated(posXPersonaje, posYPersonaje, 0);
+    glScaled(30, 30, 0);
     glmDraw(&models[PLAYER_MOD], GLM_COLOR | GLM_SMOOTH);
     glPopMatrix();
+}
+
+// ARREGLAR BUSSTOP
+void dibujaBusStop() {
+    glClear(GL_DEPTH_BUFFER_BIT);
+    glPushMatrix();
+    
+    glScaled(20,10, 2);
+    glRotated(-80, 1, 0, 0);
+    glTranslated(0,0, 4.8);
+    glmDraw(&models[BUSSTOP_MOD], GLM_COLOR | GLM_SMOOTH);
+    glPopMatrix();
+}
+
+void vidas() {
+    glPushMatrix();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glTranslated(0, 200, 0);
+    glScalef(80, 80, 0.1);
+    
+    //Habilitar el uso de texturas
+    glEnable(GL_TEXTURE_2D);
+    
+    //Elegir la textura del Quads: angulo cambia con el timer
+    glBindTexture(GL_TEXTURE_2D, texName[3]);
+    
+    glBegin(GL_QUADS);
+    glColor3ub(255,255, 255);
+    //Asignar la coordenada de textura 0,0 al vertice
+    glTexCoord2f(0.0f, 0.0f);
+    glVertex3f(-0.5f, -1.0f, 0);
+    //Asignar la coordenada de textura 1,0 al vertice
+    glTexCoord2f(1.0f, 0.0f);
+    glVertex3f(0.5f, -1.0f, 0);
+    //Asignar la coordenada de textura 1,1 al vertice
+    glTexCoord2f(1.0f, 1.0f);
+    glVertex3f(0.5f, 0.3f, 0);
+    //Asignar la coordenada de textura 0,1 al vertice
+    glTexCoord2f(0.0f, 1.0f);
+    glVertex3f(-0.5f, 0.3f, 0);
+    
+    glEnd();
+    glDisable(GL_TEXTURE_2D);
+    
+    glPopMatrix();
+    glutPostRedisplay();
 }
 void myDisplay()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    vidas();
     glPushMatrix();
+    
     glRotatef(-0.4, 1, 0, 0);
-    dibujaCesped(-100.0,20.0);
-    dibujaCesped(-10.0,50.0);
-    dibujaCalle(-60.0, 0.0);
-    dibujaAreaSegura(25.0);
-    dibujaCalle(62.0,-0.3);
-    dibujaAreaSegura(100.0);
+    
+    dibujaCesped(-90.0,10.0);
+    dibujaCalle(-56.0, -0.2);
+    dibujaCesped(-11.0,30.0);
+    dibujaAreaSegura(15.0);
+    dibujaAreaSegura(85.0);
+    dibujaCalle(50.0,-0.4);
+    
     glPopMatrix();
-    //dibujaPersonaje();
+    dibujaPersonaje(posXPersonaje, posYPersonaje);
+    dibujaBusStop();
+    
     glutSwapBuffers();
     
 }
 
 void init(){
+    
+    
     running = false;
     enteroGlobal = 0;
 
@@ -217,35 +427,102 @@ void init(){
     start = false;
     
     
-    glClearColor (0.0, 0.0, 0.0, 1.0);
+    glClearColor (1.0, 1.0, 1.0, 1.0);
     glClear( GL_COLOR_BUFFER_BIT );
+    
+    glEnable(GL_DEPTH_TEST);
+    glShadeModel(GL_SMOOTH);
     
     //player
     std::string ruta = fullPath + "objects/Patrick.obj";
-    std::cout << "Filepath: " << ruta << std::endl;
     models[PLAYER_MOD] = *glmReadOBJ(ruta.c_str());
     glmUnitize(&models[PLAYER_MOD]);
     glmVertexNormals(&models[PLAYER_MOD], 90.0, GL_TRUE);
     
-    
+    //busstop
+    ruta = fullPath + "objects/bustop.obj";
+    models[BUSSTOP_MOD] = *glmReadOBJ(ruta.c_str());
+    glmUnitize(&models[BUSSTOP_MOD]);
+    glmVertexNormals(&models[BUSSTOP_MOD], 90.0, GL_TRUE);
 }
 
-void getParentPath()
-{
-    for (int i = (int)fullPath.length()-1; i>=0 && fullPath[i] != '/'; i--) {
-        fullPath.erase(i,1);
-    }
-}
+
 
 //********* Eventos del teclado ***********//
 //*****************************************//
 void myKeyboard(unsigned char theKey, int x, int y){
     
+    switch (theKey){
+        case 'w':
+        case 'W':
+            if (running) {
+
+            }
+            break;
+        case 's':
+        case 'S':
+            if (running){
+            }
+            break;
+        case 'I':
+        case 'i':
+            if (!finished){
+                start = true;
+                running = true;
+            }
+            break;
+        case 'P':
+        case 'p':
+            start = false;
+            running = false;
+            break;
+            
+        case 'R':
+        case 'r':
+            // reset
+            init();
+            break;
+            
+        case 27:
+            exit(0);
+            break;
+    }
 }
 //********* Eventos del teclado especial ******
 //********************************************//
 void mySpecialKeyboard(int key, int x, int y) {
-
+    switch (key) {
+        case GLUT_KEY_UP:
+            if (posYPersonaje+10.0 <= 90) {
+                posYPersonaje += 10.0;
+            }
+            
+            cout << posYPersonaje << endl;
+            
+            break;
+        case GLUT_KEY_DOWN:
+            if (posYPersonaje-10.0>=-130) {
+                posYPersonaje -= 10.0;
+            }
+            
+            break;
+        case GLUT_KEY_LEFT:
+            if (posXPersonaje-10>=-160){
+                posXPersonaje -= 10.0;
+            }
+            
+            cout << posXPersonaje << endl;
+            break;
+        case GLUT_KEY_RIGHT:
+            if (posXPersonaje+10<=160) {
+                posXPersonaje += 10.0;
+            }
+            
+            break;
+            
+        default:
+            break;
+    }
     
 }
 
@@ -260,6 +537,7 @@ int main(int argc, char *argv[])
     glutInitWindowPosition(10,10);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
     glutCreateWindow("Drogger");
+    initRendering();
     init();
     glutTimerFunc(100, timer, 1); //el ultimo parametro es para control
     glutDisplayFunc(myDisplay);
@@ -271,3 +549,6 @@ int main(int argc, char *argv[])
     
     return EXIT_SUCCESS;
 }
+
+
+

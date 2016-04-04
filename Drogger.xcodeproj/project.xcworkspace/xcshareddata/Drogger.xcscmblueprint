@@ -1,0 +1,30 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "D388C566C6A26925418BF1A16F0126639BA0A9AF",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "691E642F0188A9F79CE2EBC96EF5F04DECBBB15E" : 0,
+    "D388C566C6A26925418BF1A16F0126639BA0A9AF" : 0
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "FFBFB3F5-FAB1-45AB-B682-FB33A67AC5DF",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "691E642F0188A9F79CE2EBC96EF5F04DECBBB15E" : "",
+    "D388C566C6A26925418BF1A16F0126639BA0A9AF" : "Drogger\/"
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "Drogger",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "Drogger.xcodeproj",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/omarcarreon\/GraficasComputacionales.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "691E642F0188A9F79CE2EBC96EF5F04DECBBB15E"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/omarcarreon\/Drogger.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "D388C566C6A26925418BF1A16F0126639BA0A9AF"
+    }
+  ]
+}
