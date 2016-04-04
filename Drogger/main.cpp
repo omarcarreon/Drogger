@@ -26,8 +26,9 @@ using namespace std;
 
 //Amount of models and model ids
 #define MODEL_COUNT 10
-#define PLAYER_MOD 0
-#define BUSSTOP_MOD 1
+#define DROGGER_MOD 0
+#define PLAYER_MOD 1
+#define BUSSTOP_MOD 2
 
 /////////////
 string fullPath = __FILE__;
@@ -162,16 +163,14 @@ void initRendering()
     
     sprintf(ruta,"%s%s", fullPath.c_str() , "textures/heartfull.bmp");
     LoadGLTextures(ruta,i++);
-    /*
-    sprintf(ruta,"%s%s", fullPath.c_str() , "textures/sand.bmp");
-    texName[3] = SOIL_load_OGL_texture // load an image file directly as a new OpenGL texture
-    (
-     ruta,
-     SOIL_LOAD_AUTO,
-     SOIL_CREATE_NEW_ID,
-     SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB | SOIL_FLAG_COMPRESS_TO_DXT
-     );
-*/
+    
+    sprintf(ruta,"%s%s", fullPath.c_str() , "textures/menu.bmp");
+    LoadGLTextures(ruta,i++);
+    
+    sprintf(ruta,"%s%s", fullPath.c_str() , "textures/instrucciones.bmp");
+    LoadGLTextures(ruta,i++);
+
+    
     delete image;
 }
 
@@ -394,24 +393,59 @@ void vidas() {
     glPopMatrix();
     glutPostRedisplay();
 }
+
+void drawScene(int scene)
+{
+    glPushMatrix();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glTranslated(0, 0, 0);
+    glScalef(18, 18, 0.1);
+    
+    //Habilitar el uso de texturas
+    glEnable(GL_TEXTURE_2D);
+    
+    //Elegir la textura del Quads: angulo cambia con el timer
+    glBindTexture(GL_TEXTURE_2D, texName[scene]);
+    
+    glBegin(GL_QUADS);
+    //Asignar la coordenada de textura 0,0 al vertice
+    glTexCoord2f(0.0f, 0.0f);
+    glVertex3f(-10.0f, -10.0f, 0);
+    //Asignar la coordenada de textura 1,0 al vertice
+    glTexCoord2f(1.0f, 0.0f);
+    glVertex3f(10.0f, -10.0f,0);
+    //Asignar la coordenada de textura 1,1 al vertice
+    glTexCoord2f(1.0f, 1.0f);
+    glVertex3f(10.0f, 10.0f, 0);
+    //Asignar la coordenada de textura 0,1 al vertice
+    glTexCoord2f(0.0f, 1.0f);
+    glVertex3f(-10.0f, 10.0f, 0);
+    glEnd();
+    glDisable(GL_TEXTURE_2D);
+    
+    glPopMatrix();
+    glutPostRedisplay();
+    
+}
 void myDisplay()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    vidas();
+    //vidas();
+    drawScene(5);
     glPushMatrix();
     
     glRotatef(-0.4, 1, 0, 0);
-    
+    /*
     dibujaCesped(-90.0,10.0);
     dibujaCalle(-56.0, -0.2);
     dibujaCesped(-11.0,30.0);
     dibujaAreaSegura(15.0);
     dibujaAreaSegura(85.0);
     dibujaCalle(50.0,-0.4);
-    
+    */
     glPopMatrix();
-    dibujaPersonaje(posXPersonaje, posYPersonaje);
-    dibujaBusStop();
+    //dibujaPersonaje(posXPersonaje, posYPersonaje);
+    //dibujaBusStop();
     
     glutSwapBuffers();
     
@@ -433,8 +467,14 @@ void init(){
     glEnable(GL_DEPTH_TEST);
     glShadeModel(GL_SMOOTH);
     
-    //player
+    //Drogger
     std::string ruta = fullPath + "objects/Patrick.obj";
+    models[DROGGER_MOD] = *glmReadOBJ(ruta.c_str());
+    glmUnitize(&models[DROGGER_MOD]);
+    glmVertexNormals(&models[DROGGER_MOD], 90.0, GL_TRUE);
+    
+    // Personaje
+    ruta = fullPath + "objects/Kid.obj";
     models[PLAYER_MOD] = *glmReadOBJ(ruta.c_str());
     glmUnitize(&models[PLAYER_MOD]);
     glmVertexNormals(&models[PLAYER_MOD], 90.0, GL_TRUE);

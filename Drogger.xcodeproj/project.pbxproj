@@ -70,6 +70,8 @@
 		1AE8B3221CB1FA4F00042BEB /* stb_image_aug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stb_image_aug.h; sourceTree = "<group>"; };
 		1AE8B3231CB1FA4F00042BEB /* stbi_DDS_aug_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stbi_DDS_aug_c.h; sourceTree = "<group>"; };
 		1AE8B3241CB1FA4F00042BEB /* stbi_DDS_aug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stbi_DDS_aug.h; sourceTree = "<group>"; };
+		1AE8B32D1CB1FE6300042BEB /* Kid.mtl */ = {isa = PBXFileReference; lastKnownFileType = text; name = Kid.mtl; path = objects/Kid.mtl; sourceTree = "<group>"; };
+		1AE8B32E1CB1FE6300042BEB /* Kid.obj */ = {isa = PBXFileReference; lastKnownFileType = text; name = Kid.obj; path = objects/Kid.obj; sourceTree = "<group>"; };
 		1AF655721CAC6063003A3C79 /* heart2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = heart2.png; path = textures/heart2.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -139,6 +141,8 @@
 		1A7F530C1C99DDFF00A600E4 /* objects */ = {
 			isa = PBXGroup;
 			children = (
+				1AE8B32D1CB1FE6300042BEB /* Kid.mtl */,
+				1AE8B32E1CB1FE6300042BEB /* Kid.obj */,
 				1A9561771CA8D95F00387DC7 /* bustop.obj */,
 				1A1F49921CA88AA100F65D20 /* bs_obj.mtl */,
 				1A1F49931CA88AA100F65D20 /* bs_obj.obj */,
