@@ -21,8 +21,33 @@ using namespace std;
 #include <stdlib.h>
 #include "ImageLoader.hpp"
 #include "glm.h"
-
+//#include "OpenAL/OpenAl.h"
+//#include <OpenAL/al.h>
 #include "SOIL.h"
+
+#define NUM_BUFFERS 2
+#define NUM_SOURCES 2
+#define NUM_ENVIRONMENTS 1
+/*
+ALfloat listenerPos[]={0.0,0.0,4.0};
+ALfloat listenerVel[]={0.0,0.0,0.0};
+ALfloat listenerOri[]={0.0,0.0,1.0, 0.0,1.0,0.0};
+
+ALfloat source0Pos[]={ -2.0, 0.0, 0.0};
+ALfloat source0Vel[]={ 0.0, 0.0, 0.0};
+
+
+ALfloat source1Pos[]={ 2.0, 0.0, 0.0};
+ALfloat source1Vel[]={ 0.0, 0.0, 0.0};
+
+ALuint	buffer[NUM_BUFFERS];
+ALuint	source[NUM_SOURCES];
+ALuint  environment[NUM_ENVIRONMENTS];
+
+ALsizei size,freq;
+ALenum 	format;
+ALvoid 	*data;
+*/
 
 //Cantidad de modelos y sus ids
 #define MODEL_COUNT 30
@@ -49,6 +74,7 @@ static GLuint texName[TEXTURE_COUNT];
 #define WINLEVEL1_TEXTURE 11
 #define WINLEVEL2_TEXTURE 12
 #define COMPLETEGAME_TEXTURE 13
+#define CREDITS_TEXTURE 15
 #define MAINMENU_TEXTURE 4
 #define INSTRUCTIONS_TEXTURE 5
 #define CREDITS_TEXTURE 6
@@ -118,6 +144,31 @@ bool start = false; // Indica si esta corriendo el juego
 bool play = false; // Indica si inicia o encuentra en un nivel del juego
 bool running = false; // Indica si timer esta corriendo
 
+float ambiente[][4]={
+    {0.0215, 0.1745, 0.0215, 1}, //esmeralda
+    {0.1745, 0.01175, 0.01175,1}, //ruby
+    {0.135, 0.2225, 0.1575,1},
+    {0.05375, 0.05, 0.06625,1},
+    {0.24725, 0.1995, 0.0745,1}
+};
+
+float difuso[][4]={
+    {0.07568, 0.61424, 0.07568,1},
+    {0.61424, 0.04136, 0.04136,1},
+    {0.54, 0.89, 0.63,1},
+    {0.18275, 0.17, 0.22525,1},
+    {0.75164, 0.60648, 0.22648}
+};
+
+float especular[][4]={
+    {0.633, 0.727811, 0.633,1},
+    {0.727811, 0.626959, 0.626959,1},
+    {0.316228, 0.316228, 0.316228,1},
+    {0.332741, 0.328634, 0.346435,1},
+    {0.628281, 0.555802, 0.366065}
+};
+
+float shine[]={0.6,0.6,0.1,0.3, 0.4};
 //le borramos el exceso para solo obtener el Path padre
 void getParentPath()
 {
@@ -126,16 +177,25 @@ void getParentPath()
     }
 }
 
+void eligeMaterial(int k)
+{
+    glMaterialfv(GL_FRONT, GL_AMBIENT, ambiente[k]);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, difuso[k]);
+    glMaterialfv(GL_FRONT, GL_SPECULAR, especular[k]);
+    glMaterialf(GL_FRONT, GL_SHININESS, shine[k] * 128.0);
+}
+
+
 void draw3dString (void *font, char *s, float x, float y, float z)
 {
     unsigned int i;
     glMatrixMode(GL_MODELVIEW);
-    glLineWidth(1);
+    glLineWidth(10);
     glPushMatrix();
     glTranslatef(x, y, z);
     
-    glScaled(0.005, 0.005, 1);
-    
+    glScaled(100, 100, 0);
+
     for (i = 0; i < s[i] != '\0'; i++)
     {
         glutStrokeCharacter(GLUT_STROKE_ROMAN, s[i]);
@@ -380,23 +440,30 @@ void initRendering()
     sprintf(ruta,"%s%s", fullPath.c_str() , "textures/heartfull.bmp");
     LoadGLTextures(ruta,i++);
     
-    sprintf(ruta,"%s%s", fullPath.c_str() , "textures/menu.bmp");
+    sprintf(ruta,"%s%s", fullPath.c_str() , "textures/menu1.bmp");
     LoadGLTextures(ruta,MAINMENU_TEXTURE);
     
-    sprintf(ruta,"%s%s", fullPath.c_str() , "textures/instrucciones.bmp");
+    sprintf(ruta,"%s%s", fullPath.c_str() , "textures/instrucciones1.bmp");
     LoadGLTextures(ruta,INSTRUCTIONS_TEXTURE);
     
-    sprintf(ruta,"%s%s", fullPath.c_str() , "textures/pasarNivel1.bmp");
+    sprintf(ruta,"%s%s", fullPath.c_str() , "textures/ganarNivel1.bmp");
     LoadGLTextures(ruta,WINLEVEL1_TEXTURE);
     
-    sprintf(ruta,"%s%s", fullPath.c_str() , "textures/pasarNivel2.bmp");
+    sprintf(ruta,"%s%s", fullPath.c_str() , "textures/ganarNivel2.bmp");
     LoadGLTextures(ruta,WINLEVEL2_TEXTURE);
     
-    sprintf(ruta,"%s%s", fullPath.c_str() , "textures/perderNivel.bmp");
+    sprintf(ruta,"%s%s", fullPath.c_str() , "textures/perdernivel1.bmp");
     LoadGLTextures(ruta,GAMEOVER_TEXTURE);
     
-    sprintf(ruta,"%s%s", fullPath.c_str() , "textures/terminarJuego.bmp");
+    sprintf(ruta,"%s%s", fullPath.c_str() , "textures/terminarJuego1.bmp");
     LoadGLTextures(ruta,COMPLETEGAME_TEXTURE);
+    
+    sprintf(ruta,"%s%s", fullPath.c_str() , "textures/creditos1.bmp");
+    LoadGLTextures(ruta,CREDITS_TEXTURE);
+    
+    sprintf(ruta,"%s%s", fullPath.c_str() , "textures/background.jpg");
+    LoadGLTextures(ruta,14);
+    
     delete image;
 }
 
@@ -449,14 +516,16 @@ void displayTimer(){
 }
 
 
+
+
 /****************************************************************************
  * Dibuja textura del Cesped
  ****************************************************************************/
-void dibujaCesped(double y,double height){
+void dibujaCesped(double y,double height, double z, double width){
     glPushMatrix();
     glColor3ub(0,255, 0);
-    glTranslated(0, y, 0);
-    glScalef(300, height, 0.1);
+    glTranslated(0, y, z);
+    glScalef(width, height, 0.1);
     
     //Habilitar el uso de texturas
     glEnable(GL_TEXTURE_2D);
@@ -487,11 +556,11 @@ void dibujaCesped(double y,double height){
 /****************************************************************************
  * Dibuja textura de Area Segura (Arena)
  ****************************************************************************/
-void dibujaAreaSegura(double y, double height) {
+void dibujaAreaSegura(double y, double z, double height, double width) {
     glPushMatrix();
     glColor3ub(255,255,224);
-    glTranslated(0, y, 0);
-    glScalef(300, height, 0.1);
+    glTranslated(0, y, z);
+    glScalef(width, height, 0.1);
     
     //Habilitar el uso de texturas
     glEnable(GL_TEXTURE_2D);
@@ -522,11 +591,11 @@ void dibujaAreaSegura(double y, double height) {
 /****************************************************************************
  * Dibuja textura de la Calle
  ****************************************************************************/
-void dibujaCalle(double y, double rayasY) {
+void dibujaCalle(double y, double rayasY, double z, double width, double height) {
     glPushMatrix();
     glColor3ub(128,128, 128);
-    glTranslated(0, y, 0);
-    glScalef(300, 50.0, 0.1);
+    glTranslated(0, y, z);
+    glScalef(width, height, 0.1);
     
     //Habilitar el uso de texturas
     glEnable(GL_TEXTURE_2D);
@@ -827,13 +896,13 @@ void colisionWhatsapp() {
  ****************************************************************************/
 void dibujaBusStop() {
     glClear(GL_DEPTH_BUFFER_BIT);
+
     glPushMatrix();
     
     glTranslated(posXBusStop,posYBusStop, 0);
     glRotatef(0.8, 1, 0, 0);
     glScaled(60,60, 0);
     glRotatef(-90, 0, 1, 0);
-    
     glmDraw(&models[BUSSTOP_MOD], GLM_COLOR | GL_TEXTURE | GLM_SMOOTH);
     glPopMatrix();
 }
@@ -1116,10 +1185,9 @@ void dibujaFbDown() {
  ****************************************************************************/
 void vidas(int num) {
     glPushMatrix();
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glColor3ub(255,255, 255);
-    glTranslated(-225, 250, 0);
-    glScalef(50, 50, 2);
+    glTranslated(-106, -106, 0);
+    glRotatef(0.8, 1, 0, 0);
+    glScalef(20, 20, 2);
     
     //Habilitar el uso de texturas
     glEnable(GL_TEXTURE_2D);
@@ -1128,7 +1196,7 @@ void vidas(int num) {
     glBindTexture(GL_TEXTURE_2D, texName[3]);
     
     glBegin(GL_QUADS);
-    glColor3ub(255,255, 255);
+    glColor3ub(129,208, 0);
     float offset = -0.5f;
     for (int i=0; i<num; i++) {
         //Asignar la coordenada de textura 0,0 al vertice
@@ -1145,7 +1213,7 @@ void vidas(int num) {
         glVertex3f(offset, 0.3f, 0);
         offset += 1.25;
     }
-    
+    glColor3ub(255, 255, 255);
     glEnd();
     glDisable(GL_TEXTURE_2D);
     
@@ -1160,6 +1228,7 @@ void drawScene(int scene)
 {
     glPushMatrix();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glColor3ub(255, 255, 255);
     glTranslated(0, 0, 0);
     glScalef(28, 28, 0.1);
     
@@ -1174,6 +1243,41 @@ void drawScene(int scene)
     glTexCoord2f(0.0f, 0.0f);
     glVertex3f(-10.0f, -10.0f, 0);
    
+    glTexCoord2f(1.0f, 0.0f);
+    glVertex3f(10.0f, -10.0f,0);
+    
+    glTexCoord2f(1.0f, 1.0f);
+    glVertex3f(10.0f, 10.0f, 0);
+    
+    glTexCoord2f(0.0f, 1.0f);
+    glVertex3f(-10.0f, 10.0f, 0);
+    glEnd();
+    glDisable(GL_TEXTURE_2D);
+    
+    glPopMatrix();
+    glutPostRedisplay();
+    
+}
+
+void dibujaBackground()
+{
+    glPushMatrix();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glTranslated(0, 0, 0);
+    glRotatef(0.8, 1, 0, 0);
+    glScalef(28, 28, 0.1);
+    
+    //Habilitar el uso de texturas
+    glEnable(GL_TEXTURE_2D);
+    
+    //Elegir la textura del background
+    glBindTexture(GL_TEXTURE_2D, texName[14]);
+    
+    glBegin(GL_QUADS);
+    
+    glTexCoord2f(0.0f, 0.0f);
+    glVertex3f(-10.0f, -10.0f, 0);
+    
     glTexCoord2f(1.0f, 0.0f);
     glVertex3f(10.0f, -10.0f,0);
     
@@ -1249,8 +1353,64 @@ void reinicio(){
  * Inicializa variables y modelos
  ****************************************************************************/
 void init(){
+    /*
+    alListenerfv(AL_POSITION,listenerPos);
+    alListenerfv(AL_VELOCITY,listenerVel);
+    alListenerfv(AL_ORIENTATION,listenerOri);
     
+    alGetError(); // clear any error messages
     
+    // Generate buffers, or else no sound will happen!
+    alGenBuffers(NUM_BUFFERS, buffer);
+    
+    if(alGetError() != AL_NO_ERROR)
+    {
+        printf("- Error creating buffers !!\n");
+        exit(1);
+    }
+    else
+    {
+        printf("init() - No errors yet.");
+    }
+    
+
+    
+    loadWAVFile("c.wav", &format, &data, &size, &freq);
+    alBufferData(buffer[0],format,data,size,freq);
+    alutUnloadWAV(format,data,size,freq);
+    
+    alutLoadWAVFile("b.wav",&format,&data,&size,&freq);
+    alBufferData(buffer[1],format,data,size,freq);
+    alutUnloadWAV(format,data,size,freq);
+    */
+    //alGetError(); /* clear error */
+    /*
+    alGenSources(NUM_SOURCES, source);
+    
+    if(alGetError() != AL_NO_ERROR)
+    {
+        printf("- Error creating sources !!\n");
+        exit(2);
+    }
+    else
+    {
+        printf("init - no errors after alGenSources\n");
+    }
+    
+    alSourcef(source[0],AL_PITCH,1.0f);
+    alSourcef(source[0],AL_GAIN,1.0f);
+    alSourcefv(source[0],AL_POSITION,source0Pos);
+    alSourcefv(source[0],AL_VELOCITY,source0Vel);
+    alSourcei(source[0],AL_BUFFER,buffer[0]);
+    alSourcei(source[0],AL_LOOPING,AL_FALSE);
+    
+    alSourcef(source[1],AL_PITCH,1.0f);
+    alSourcef(source[1],AL_GAIN,1.0f);
+    alSourcefv(source[1],AL_POSITION,source1Pos);
+    alSourcefv(source[1],AL_VELOCITY,source1Vel);
+    alSourcei(source[1],AL_BUFFER,buffer[1]);
+    alSourcei(source[1],AL_LOOPING,AL_TRUE);
+    */
     running = false;
     enteroGlobal = 0;
     
@@ -1380,7 +1540,7 @@ void myKeyboard(unsigned char theKey, int x, int y){
             } else if (actualTexture == COMPLETEGAME_TEXTURE) { // Si completa el juego
                 play = true;
                 start = false;
-                actualTexture = LEVEL1; // Vuelve a jugar nivel 1
+                reinicio(); // Vuelve a jugar nivel 1
             }
             
             break;
@@ -1409,6 +1569,12 @@ void myKeyboard(unsigned char theKey, int x, int y){
             }
             
             break;
+        case 'C':
+        case 'c':
+            if (!play && actualTexture == MAINMENU_TEXTURE) {
+                actualTexture = CREDITS_TEXTURE;
+            }
+            break;
         case 'P':
         case 'p':
             if (play && (actualTexture == LEVEL1 || actualTexture == LEVEL2 || actualTexture == LEVEL3)){
@@ -1420,12 +1586,13 @@ void myKeyboard(unsigned char theKey, int x, int y){
             
         case 'R':
         case 'r':
-            if (actualTexture == INSTRUCTIONS_TEXTURE) {
+            if (actualTexture == INSTRUCTIONS_TEXTURE || actualTexture == CREDITS_TEXTURE) {
                 actualTexture = MAINMENU_TEXTURE;
             } else if (actualTexture == GAMEOVER_TEXTURE || actualTexture == COMPLETEGAME_TEXTURE) {
                 play = false;
                 start = false;
                 actualTexture = MAINMENU_TEXTURE;
+                vidastotal = 3;
             } else if (actualTexture == LEVEL1 || actualTexture == LEVEL2 || actualTexture == LEVEL3) {
                 // reset
                 reinicio();
@@ -1556,16 +1723,17 @@ void myDisplay()
     if (!play) {
         drawScene(actualTexture);
     } else if (play && actualTexture == LEVEL1){
-        vidas(vidastotal);
         glPushMatrix();
         glRotatef(-0.8, 1, 0, 0);
         
-        dibujaCesped(-90.0,10.0);
-        dibujaCalle(-56.0, -0.2);
-        dibujaCesped(-11.0,30.0);
-        dibujaAreaSegura(15.0,20.0);
-        dibujaAreaSegura(85.0,20.0);
-        dibujaCalle(50.0,-0.4);
+        dibujaBackground();
+        
+        dibujaCesped(-90.0,10.0,0.0,300.0);
+        dibujaCalle(-56.0, -0.2, 0.0,300.0,50.0);
+        dibujaCesped(-11.0,30.0,0.0,300.0);
+        dibujaAreaSegura(8.0,1.0,10.0,193.0);
+        dibujaAreaSegura(65.0,1.0,20.0, 193.0);
+        dibujaCalle(35.0,-0.4, 1.0,193.0,40.0);
         
         dibujaCigarUp();
         dibujaCigarDown();
@@ -1575,19 +1743,22 @@ void myDisplay()
         dibujaBeerDown();
         dibujaBusStop();
         dibujaPersonaje(posXPersonaje, posYPersonaje);
+        vidas(vidastotal);
+        
         glPopMatrix();
         
     } else if (play && actualTexture == LEVEL2) {
-        vidas(vidastotal);
         
         glPushMatrix();
         glRotatef(-0.8, 1, 0, 0);
         
-        dibujaAreaSegura(-90.0,10.0);
-        dibujaCesped(0.0,90.0);
-        dibujaAreaSegura(30.0, 10.0);
-        dibujaCalle(64, 0);
-        dibujaAreaSegura(90.0, 10.0);
+        dibujaBackground();
+        
+        dibujaAreaSegura(-90.0,0.0,11.0,300.0);
+        dibujaCesped(0.0,90.0,0.0,300.0);
+        dibujaAreaSegura(10.0,1.0, 10.0,193.0);
+        dibujaCalle(44, 0, 1.0 ,193.0 ,50.0);
+        dibujaAreaSegura(35.0,2.0, 10.0,86.0);
         
         dibujaPlayset();
         dibujaBench();
@@ -1597,18 +1768,21 @@ void myDisplay()
         
         dibujaSemaforo();
         dibujaPersonaje(posXPersonaje, posYPersonaje);
+        vidas(vidastotal);
         glPopMatrix();
     } else if (play && actualTexture == LEVEL3){
-        vidas(vidastotal);
+        
         
         glPushMatrix();
         glRotatef(-0.8, 1, 0, 0);
         
-        dibujaAreaSegura(-90.0,10.0);
-        dibujaCalle(-57, 0);
-        dibujaAreaSegura(-32, 10.0);
-        dibujaCalle(2, 0);
-        dibujaCesped(67, 50.0);
+        dibujaBackground();
+        
+        dibujaAreaSegura(-87.0,0.1,10.0,290.0);
+        dibujaCalle(-57, 0, 0.0,300.0,50.0);
+        dibujaAreaSegura(-19,1.0, 10.0,193.0);
+        dibujaCalle(2, 0,1.0,193.0,30.0);
+        dibujaCesped(61, 50.0,1.0,193.0);
         
         dibujaPhoneUp();
         dibujaPhoneDown();
@@ -1619,9 +1793,66 @@ void myDisplay()
         dibujaEscuela();
         
         dibujaPersonaje(posXPersonaje, posYPersonaje);
+        
+        vidas(vidastotal);
         glPopMatrix();
     }
     glutSwapBuffers();
+    
+}
+
+/****************************************************************************
+ * Acciones del menu de opciones
+ ****************************************************************************/
+void myMenu(int entryID)
+{
+   
+    
+    switch (entryID) {
+        case 1:
+            start = true;
+            running = true;
+            break;
+        case 2:
+            reinicio();
+            break;
+        case 3:
+            start = false;
+            running = false;
+            break;
+        case 4:
+            reinicio();
+            play = false;
+            start = false;
+            actualTexture = MAINMENU_TEXTURE;
+            break;
+        case 5:
+            exit(0);
+        default:
+            break;
+    }
+    
+    // volver a dibujar
+    glutPostRedisplay();
+}
+
+/****************************************************************************
+ * Menu de Opciones - Click derecho
+ ****************************************************************************/
+void createMenus(){
+    
+    // crear el menú e indicar la función callback
+    glutCreateMenu(myMenu);
+    
+    // agregar entradas
+    glutAddMenuEntry("1. Iniciar",1);
+    glutAddMenuEntry("2. Reiniciar",2);
+    glutAddMenuEntry("3. Pausar",3);
+    glutAddMenuEntry("4. Regresar al Menú",4);
+    glutAddMenuEntry("5. Salir",5);
+
+    // atar el menú al botón derecho
+    glutAttachMenu(GLUT_RIGHT_BUTTON);
     
 }
 
@@ -1632,6 +1863,8 @@ int main(int argc, char *argv[])
     glutInit(&argc, argv);
     glutInitWindowSize(screenWidth,screenHeight);
     glutInitWindowPosition(10,10);
+    //initialise openAL
+    //alutInit(&argc, argv) ;
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
     glutCreateWindow("Drogger");
     initRendering();
@@ -1640,7 +1873,7 @@ int main(int argc, char *argv[])
     glutDisplayFunc(myDisplay);
     glutKeyboardFunc(myKeyboard);
     glutSpecialFunc(mySpecialKeyboard);
-    
+    createMenus();
     glutReshapeFunc(reshape);
     glutMainLoop();
     
