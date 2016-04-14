@@ -38,16 +38,20 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		1A1F49921CA88AA100F65D20 /* bs_obj.mtl */ = {isa = PBXFileReference; lastKnownFileType = text; name = bs_obj.mtl; path = objects/bs_obj.mtl; sourceTree = "<group>"; };
-		1A1F49931CA88AA100F65D20 /* bs_obj.obj */ = {isa = PBXFileReference; lastKnownFileType = text; name = bs_obj.obj; path = objects/bs_obj.obj; sourceTree = "<group>"; };
 		1A3619761C98FAA600E131F9 /* Drogger */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Drogger; sourceTree = BUILT_PRODUCTS_DIR; };
 		1A3619801C98FAB800E131F9 /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = System/Library/Frameworks/GLUT.framework; sourceTree = SDKROOT; };
 		1A3619811C98FAB800E131F9 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 		1A7F530E1C99DEA700A600E4 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		1A7F53101C99E32700A600E4 /* Patrick.mtl */ = {isa = PBXFileReference; lastKnownFileType = text; name = Patrick.mtl; path = objects/Patrick.mtl; sourceTree = "<group>"; };
 		1A7F53111C99E32700A600E4 /* Patrick.obj */ = {isa = PBXFileReference; lastKnownFileType = text; name = Patrick.obj; path = objects/Patrick.obj; sourceTree = "<group>"; };
-		1A7F53121C99E36A00A600E4 /* patrik_skin.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = patrik_skin.jpg; path = textures/patrik_skin.jpg; sourceTree = "<group>"; };
 		1A9561771CA8D95F00387DC7 /* bustop.obj */ = {isa = PBXFileReference; lastKnownFileType = text; name = bustop.obj; path = objects/bustop.obj; sourceTree = "<group>"; };
+		1AE094A01CBCC34400159505 /* Beer.mtl */ = {isa = PBXFileReference; lastKnownFileType = text; name = Beer.mtl; path = objects/Beer.mtl; sourceTree = "<group>"; };
+		1AE094A11CBCC34400159505 /* Beer.obj */ = {isa = PBXFileReference; lastKnownFileType = text; name = Beer.obj; path = objects/Beer.obj; sourceTree = "<group>"; };
+		1AE094A21CBCC89700159505 /* busstop2.obj */ = {isa = PBXFileReference; lastKnownFileType = text; name = busstop2.obj; path = objects/busstop2.obj; sourceTree = "<group>"; };
+		1AE094A31CBDC47500159505 /* cigar.mtl */ = {isa = PBXFileReference; lastKnownFileType = text; name = cigar.mtl; path = objects/cigar.mtl; sourceTree = "<group>"; };
+		1AE094A41CBDC47500159505 /* cigar.obj */ = {isa = PBXFileReference; lastKnownFileType = text; name = cigar.obj; path = objects/cigar.obj; sourceTree = "<group>"; };
+		1AE094A51CBDF5EB00159505 /* gun.mtl */ = {isa = PBXFileReference; lastKnownFileType = text; name = gun.mtl; path = objects/gun.mtl; sourceTree = "<group>"; };
+		1AE094A61CBDF5EB00159505 /* gun.obj */ = {isa = PBXFileReference; lastKnownFileType = text; name = gun.obj; path = objects/gun.obj; sourceTree = "<group>"; };
 		1AE8B3031CB1F85900042BEB /* glm_util.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = glm_util.c; sourceTree = "<group>"; };
 		1AE8B3041CB1F85900042BEB /* glm.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = glm.c; sourceTree = "<group>"; };
 		1AE8B3051CB1F85900042BEB /* glm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = glm.h; sourceTree = "<group>"; };
@@ -70,9 +74,6 @@
 		1AE8B3221CB1FA4F00042BEB /* stb_image_aug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stb_image_aug.h; sourceTree = "<group>"; };
 		1AE8B3231CB1FA4F00042BEB /* stbi_DDS_aug_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stbi_DDS_aug_c.h; sourceTree = "<group>"; };
 		1AE8B3241CB1FA4F00042BEB /* stbi_DDS_aug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stbi_DDS_aug.h; sourceTree = "<group>"; };
-		1AE8B32D1CB1FE6300042BEB /* Kid.mtl */ = {isa = PBXFileReference; lastKnownFileType = text; name = Kid.mtl; path = objects/Kid.mtl; sourceTree = "<group>"; };
-		1AE8B32E1CB1FE6300042BEB /* Kid.obj */ = {isa = PBXFileReference; lastKnownFileType = text; name = Kid.obj; path = objects/Kid.obj; sourceTree = "<group>"; };
-		1AF655721CAC6063003A3C79 /* heart2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = heart2.png; path = textures/heart2.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -141,11 +142,14 @@
 		1A7F530C1C99DDFF00A600E4 /* objects */ = {
 			isa = PBXGroup;
 			children = (
-				1AE8B32D1CB1FE6300042BEB /* Kid.mtl */,
-				1AE8B32E1CB1FE6300042BEB /* Kid.obj */,
+				1AE094A51CBDF5EB00159505 /* gun.mtl */,
+				1AE094A61CBDF5EB00159505 /* gun.obj */,
+				1AE094A31CBDC47500159505 /* cigar.mtl */,
+				1AE094A41CBDC47500159505 /* cigar.obj */,
+				1AE094A01CBCC34400159505 /* Beer.mtl */,
+				1AE094A11CBCC34400159505 /* Beer.obj */,
+				1AE094A21CBCC89700159505 /* busstop2.obj */,
 				1A9561771CA8D95F00387DC7 /* bustop.obj */,
-				1A1F49921CA88AA100F65D20 /* bs_obj.mtl */,
-				1A1F49931CA88AA100F65D20 /* bs_obj.obj */,
 				1A7F53101C99E32700A600E4 /* Patrick.mtl */,
 				1A7F53111C99E32700A600E4 /* Patrick.obj */,
 			);
@@ -155,8 +159,6 @@
 		1A7F530D1C99DE0700A600E4 /* textures */ = {
 			isa = PBXGroup;
 			children = (
-				1AF655721CAC6063003A3C79 /* heart2.png */,
-				1A7F53121C99E36A00A600E4 /* patrik_skin.jpg */,
 			);
 			name = textures;
 			sourceTree = "<group>";
