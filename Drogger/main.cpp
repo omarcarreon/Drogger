@@ -21,33 +21,23 @@ using namespace std;
 #include <stdlib.h>
 #include "ImageLoader.hpp"
 #include "glm.h"
-//#include "OpenAL/OpenAl.h"
-//#include <OpenAL/al.h>
+
 #include "SOIL.h"
 
-#define NUM_BUFFERS 2
-#define NUM_SOURCES 2
-#define NUM_ENVIRONMENTS 1
-/*
-ALfloat listenerPos[]={0.0,0.0,4.0};
-ALfloat listenerVel[]={0.0,0.0,0.0};
-ALfloat listenerOri[]={0.0,0.0,1.0, 0.0,1.0,0.0};
 
-ALfloat source0Pos[]={ -2.0, 0.0, 0.0};
-ALfloat source0Vel[]={ 0.0, 0.0, 0.0};
+#include "SDL2/SDL.h"
+#include "SDL2_mixer/SDL_mixer.h"
 
 
-ALfloat source1Pos[]={ 2.0, 0.0, 0.0};
-ALfloat source1Vel[]={ 0.0, 0.0, 0.0};
+//The music that will be played
+Mix_Music *gMusic = NULL;
 
-ALuint	buffer[NUM_BUFFERS];
-ALuint	source[NUM_SOURCES];
-ALuint  environment[NUM_ENVIRONMENTS];
-
-ALsizei size,freq;
-ALenum 	format;
-ALvoid 	*data;
-*/
+//The sound effects that will be used
+Mix_Chunk *gameFail = NULL;
+Mix_Chunk *levelcomplete = NULL;
+Mix_Chunk *gamewin = NULL;
+Mix_Chunk *pierdevida = NULL;
+bool success = true;
 
 //Cantidad de modelos y sus ids
 #define MODEL_COUNT 30
@@ -77,7 +67,6 @@ static GLuint texName[TEXTURE_COUNT];
 #define CREDITS_TEXTURE 15
 #define MAINMENU_TEXTURE 4
 #define INSTRUCTIONS_TEXTURE 5
-#define CREDITS_TEXTURE 6
 #define LEVEL1 7
 #define LEVEL2 8
 #define LEVEL3 9
@@ -144,6 +133,16 @@ bool start = false; // Indica si esta corriendo el juego
 bool play = false; // Indica si inicia o encuentra en un nivel del juego
 bool running = false; // Indica si timer esta corriendo
 
+GLfloat variableLightPosition = 0.0f;
+
+//le borramos el exceso para solo obtener el Path padre
+void getParentPath()
+{
+    for (int i = (int)fullPath.length()-1; i>=0 && fullPath[i] != '/'; i--) {
+        fullPath.erase(i,1);
+    }
+}
+
 float ambiente[][4]={
     {0.0215, 0.1745, 0.0215, 1}, //esmeralda
     {0.1745, 0.01175, 0.01175,1}, //ruby
@@ -168,34 +167,36 @@ float especular[][4]={
     {0.628281, 0.555802, 0.366065}
 };
 
-float shine[]={0.6,0.6,0.1,0.3, 0.4};
-//le borramos el exceso para solo obtener el Path padre
-void getParentPath()
-{
-    for (int i = (int)fullPath.length()-1; i>=0 && fullPath[i] != '/'; i--) {
-        fullPath.erase(i,1);
-    }
-}
+float shine[]={1.0,1.0,0.1,0.3, 0.4};
 
-void eligeMaterial(int k)
-{
-    glMaterialfv(GL_FRONT, GL_AMBIENT, ambiente[k]);
-    glMaterialfv(GL_FRONT, GL_DIFFUSE, difuso[k]);
-    glMaterialfv(GL_FRONT, GL_SPECULAR, especular[k]);
-    glMaterialf(GL_FRONT, GL_SHININESS, shine[k] * 128.0);
-}
 
+void lucesMaterial(int i)
+{
+    //Asigna los apropiados materiales a las superficies
+    glMaterialfv(GL_FRONT,GL_AMBIENT,ambiente[i]);
+    glMaterialfv(GL_FRONT,GL_DIFFUSE,difuso[i]);
+    glMaterialfv(GL_FRONT,GL_SPECULAR,especular[i]);
+    glMaterialf(GL_FRONT,GL_SHININESS,shine[i]*128.0);
+    // asigna la apropiada fuente de luz
+    GLfloat lightIntensity[] = {1.0f, 1.0f, 1.0f, 1.0f};
+    GLfloat light_position[] = {2.0f, variableLightPosition, 3.0f, 0.0f};
+    glLightfv(GL_LIGHT0, GL_POSITION,light_position);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE,lightIntensity);
+    //asigna la c√°mara
+    //comienza el dibujo
+    
+}
 
 void draw3dString (void *font, char *s, float x, float y, float z)
 {
     unsigned int i;
-    glMatrixMode(GL_MODELVIEW);
-    glLineWidth(10);
+    
     glPushMatrix();
     glTranslatef(x, y, z);
     
-    glScaled(100, 100, 0);
-
+    glScaled(1.0, 1.0, 1.0);
+    glLineWidth(1);
+    glColor3f(0.0, 0.0, 0.0);
     for (i = 0; i < s[i] != '\0'; i++)
     {
         glutStrokeCharacter(GLUT_STROKE_ROMAN, s[i]);
@@ -638,12 +639,16 @@ void dibujaPersonaje(double posX, double posY) {
     
     glPushMatrix();
     
+    
     glTranslated(posXPersonaje, posYPersonaje, 0);
     glRotatef(0.8, 1, 0, 0);
     glRotatef(180, 0,1, 0);
     glScaled(20, 20, 0.1);
     glmDraw(&models[PLAYER_MOD], GLM_COLOR);
+    
+    
     glPopMatrix();
+
 }
 
 /****************************************************************************
@@ -653,10 +658,12 @@ void colisionGun(){
     if (posYGunUp == posYPersonaje ){
         if (fabs(posXGunUp-posXPersonaje) <= 6) {
             vidastotal--;
+            Mix_PlayChannel( 0, pierdevida, 0 );
             dibujaPersonaje(0, -85);
             
         } else if (posXGunUp == 0 && posXPersonaje == 0) {
             vidastotal--;
+            Mix_PlayChannel( 0, pierdevida, 0 );
             dibujaPersonaje(0, -85);
         }
     }
@@ -664,10 +671,12 @@ void colisionGun(){
     if (posYGunDown == posYPersonaje){
         if (fabs(posXGunDown-posXPersonaje) <= 6) {
             vidastotal--;
+            Mix_PlayChannel( 0, pierdevida, 0 );
             dibujaPersonaje(0, -85);
             
         } else if (posXGunDown == 0 && posXPersonaje == 0) {
             vidastotal--;
+            Mix_PlayChannel( 0, pierdevida, 0 );
             dibujaPersonaje(0, -85);
         }
     }
@@ -681,9 +690,11 @@ void colisionMan(){
     if (posYMan == posYPersonaje + offset){
         if (fabs(posXMan-posXPersonaje) <= 6) {
             vidastotal--;
+            Mix_PlayChannel( 0, pierdevida, 0 );
             dibujaPersonaje(0, -85);
         } else if (posXMan == 0 && posXPersonaje == 0) {
             vidastotal--;
+            Mix_PlayChannel( 0, pierdevida, 0 );
             dibujaPersonaje(0, -85);
         }
     }
@@ -697,10 +708,12 @@ void colisionBeer() {
     if (posYBeerUp == posYPersonaje + offset){
         if (fabs(posXBeerUp-posXPersonaje) <= 6) {
             vidastotal--;
+            Mix_PlayChannel( 0, pierdevida, 0 );
             dibujaPersonaje(0, -85);
             
         } else if (posXBeerUp == 0 && posXPersonaje == 0) {
             vidastotal--;
+            Mix_PlayChannel( 0, pierdevida, 0 );
             dibujaPersonaje(0, -85);
         }
     }
@@ -708,10 +721,12 @@ void colisionBeer() {
     if (posYBeerDown == posYPersonaje + offset){
         if (fabs(posXBeerDown-posXPersonaje) <= 6) {
             vidastotal--;
+            Mix_PlayChannel( 0, pierdevida, 0 );
             dibujaPersonaje(0, -85);
             
         } else if (posXBeerDown == 0 && posXPersonaje == 0) {
             vidastotal--;
+            Mix_PlayChannel( 0, pierdevida, 0 );
             dibujaPersonaje(0, -85);
         }
     }
@@ -725,10 +740,12 @@ void colisionDrug() {
     if (posYDrugUp == posYPersonaje - offset){
         if (fabs(posXDrugUp-posXPersonaje) <= 6) {
             vidastotal--;
+            Mix_PlayChannel( 0, pierdevida, 0 );
             dibujaPersonaje(0, -85);
             
         } else if (posXDrugUp == 0 && posXPersonaje == 0) {
             vidastotal--;
+            Mix_PlayChannel( 0, pierdevida, 0 );
             dibujaPersonaje(0, -85);
         }
     }
@@ -736,10 +753,12 @@ void colisionDrug() {
     if ((posYDrugDown == posYPersonaje - offset) || (posYPersonaje -posYDrugDown == 5)){
         if (fabs(posXDrugDown-posXPersonaje) <= 6) {
             vidastotal--;
+            Mix_PlayChannel( 0, pierdevida, 0 );
             dibujaPersonaje(0, -85);
             
         } else if (posXDrugDown == 0 && posXPersonaje == 0) {
             vidastotal--;
+            Mix_PlayChannel( 0, pierdevida, 0 );
             dibujaPersonaje(0, -85);
         }
     }
@@ -755,10 +774,12 @@ void colisionCigar() {
         if (fabs(posXCigarUp-posXPersonaje) <= 6) {
             vidastotal--;
             dibujaPersonaje(0, -85);
+            Mix_PlayChannel( 0, pierdevida, 0 );
             
         } else if (posXCigarUp == 0 && posXPersonaje == 0) {
             vidastotal--;
             dibujaPersonaje(0, -85);
+            Mix_PlayChannel( 0, pierdevida, 0 );
         }
     }
     
@@ -766,10 +787,12 @@ void colisionCigar() {
         if (fabs(posXCigarDown-posXPersonaje) <= 6) {
             vidastotal--;
             dibujaPersonaje(0, -85);
+            Mix_PlayChannel( 0, pierdevida, 0 );
             
         } else if (posXCigarDown == 0 && posXPersonaje == 0) {
             vidastotal--;
             dibujaPersonaje(0, -85);
+            Mix_PlayChannel( 0, pierdevida, 0 );
         }
     }
 }
@@ -781,7 +804,10 @@ void colisionBusStop() {
     if (posYPersonaje >= 95){
         if (posXPersonaje >= -50 && posXPersonaje <= 40) {
             play = false;
+            Mix_HaltMusic();
+            Mix_PlayChannel( 0, levelcomplete, 0 );
             actualTexture = WINLEVEL1_TEXTURE;
+            variableLightPosition = 0.0f;
             dibujaPersonaje(0, -85);
         }
     }
@@ -794,7 +820,10 @@ void colisionSemaforo() {
     if (posYPersonaje == 45){
         if (posXPersonaje == 50) {
             play = false;
+            Mix_HaltMusic();
+            Mix_PlayChannel( 0, levelcomplete, 0 );
             actualTexture = WINLEVEL2_TEXTURE;
+            variableLightPosition = 0.0f;
             dibujaPersonaje(0, -85);
         }
     }
@@ -806,7 +835,9 @@ void colisionSemaforo() {
 void colisionSchool() {
     if (posYPersonaje >= 75){
         if (posXPersonaje >= -110 && posXPersonaje <= 110) {
+            Mix_HaltMusic();
             actualTexture = COMPLETEGAME_TEXTURE;
+            Mix_PlayChannel(0, gamewin, 0);
             play = false;
             dibujaPersonaje(0, -85);
         }
@@ -821,20 +852,25 @@ void colisionPhone() {
     if (posYPhoneUp == posYPersonaje || posYPhoneUp == posYPersonaje - 10){
         if (fabs(posXPhoneUp-posXPersonaje) <= 6) {
             vidastotal--;
+            Mix_PlayChannel( 0, pierdevida, 0 );
             dibujaPersonaje(0, -85);
+            
             
         } else if (posXPhoneUp == 0 && posXPersonaje == 0) {
             vidastotal--;
+            Mix_PlayChannel( 0, pierdevida, 0 );
             dibujaPersonaje(0, -85);
         }
     }
     if (posYPhoneDown == posYPersonaje - offset){
         if (fabs(posXPhoneDown-posXPersonaje) <= 6) {
             vidastotal--;
+            Mix_PlayChannel( 0, pierdevida, 0 );
             dibujaPersonaje(0, -85);
             
         } else if (posXPhoneDown == 0 && posXPersonaje == 0) {
             vidastotal--;
+            Mix_PlayChannel( 0, pierdevida, 0 );
             dibujaPersonaje(0, -85);
         }
     }
@@ -847,10 +883,12 @@ void colisionDrogger() {
     if (posYDrogger == posYPersonaje + 10){
         if (fabs(posXDrogger-posXPersonaje) <= 13) {
             vidastotal--;
+            Mix_PlayChannel( 0, pierdevida, 0 );
             dibujaPersonaje(0, -85);
             
         } else if (posXDrogger == 0 && posXPersonaje == 0) {
             vidastotal--;
+            Mix_PlayChannel( 0, pierdevida, 0 );
             dibujaPersonaje(0, -85);
         }
         
@@ -865,10 +903,12 @@ void colisionFb() {
     if (posYFbDown == posYPersonaje - offset){
         if (fabs(posXFbDown-posXPersonaje) <= 6) {
             vidastotal--;
+            Mix_PlayChannel( 0, pierdevida, 0 );
             dibujaPersonaje(0, -85);
             
         } else if (posXFbDown == 0 && posXPersonaje == 0) {
             vidastotal--;
+            Mix_PlayChannel( 0, pierdevida, 0 );
             dibujaPersonaje(0, -85);
         }
     }
@@ -882,10 +922,12 @@ void colisionWhatsapp() {
     if (posYWhatsapp == posYPersonaje - offset1 || posYWhatsapp == posYPersonaje - offset2){
         if (fabs(posXWhatsapp-posXPersonaje) <= 6) {
             vidastotal--;
+            Mix_PlayChannel( 0, pierdevida, 0 );
             dibujaPersonaje(0, -85);
             
         } else if (posXWhatsapp == 0 && posXPersonaje == 0) {
             vidastotal--;
+            Mix_PlayChannel( 0, pierdevida, 0 );
             dibujaPersonaje(0, -85);
         }
     }
@@ -898,12 +940,17 @@ void dibujaBusStop() {
     glClear(GL_DEPTH_BUFFER_BIT);
 
     glPushMatrix();
-    
     glTranslated(posXBusStop,posYBusStop, 0);
     glRotatef(0.8, 1, 0, 0);
     glScaled(60,60, 0);
     glRotatef(-90, 0, 1, 0);
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+    lucesMaterial(0);
     glmDraw(&models[BUSSTOP_MOD], GLM_COLOR | GL_TEXTURE | GLM_SMOOTH);
+    glDisable(GL_LIGHT0);
+    glDisable(GL_LIGHTING);
+    
     glPopMatrix();
 }
 
@@ -912,13 +959,20 @@ void dibujaBusStop() {
  ****************************************************************************/
 void dibujaSemaforo() {
     glClear(GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+    lucesMaterial(1);
     glPushMatrix();
-    
+
     glTranslated(posXSemaforo,posYSemaforo, 0);
     glRotatef(0.8, 1, 0, 0);
     glScaled(70,120, 1);
+    
     glmDraw(&models[SEMAFORO_MOD], GLM_COLOR | GL_TEXTURE | GLM_SMOOTH);
+    
     glPopMatrix();
+    glDisable(GL_LIGHT0);
+    glDisable(GL_LIGHTING);
 }
 
 /****************************************************************************
@@ -932,6 +986,7 @@ void dibujaPlayset() {
     glRotatef(0.8, 1, 0, 0);
     glScaled(30,40, 0.1);
     glRotatef(-58, 0, 1, 0);
+    
     glmDraw(&models[PLAYSET_MOD], GLM_COLOR | GLM_SMOOTH);
     glPopMatrix();
 }
@@ -957,14 +1012,18 @@ void dibujaBench() {
  ****************************************************************************/
 void dibujaEscuela(){
     glClear(GL_DEPTH_BUFFER_BIT);
+
     glPushMatrix();
     
     glTranslated(posXSchool,posYSchool, 0);
     glRotatef(0.8, 1, 0, 0);
     glScaled(140,180, 0.1);
     glRotatef(-25, 0, 1, 0);
-    glmDraw(&models[SCHOOL_MOD], GLM_COLOR | GL_TEXTURE | GLM_SMOOTH);
+
+    glmDraw(&models[SCHOOL_MOD], GLM_COLOR  | GLM_SMOOTH);
+
     glPopMatrix();
+
 }
 
 
@@ -1259,6 +1318,37 @@ void drawScene(int scene)
     
 }
 
+void drawObjetivo() {
+    glPushMatrix();
+    glTranslated(0, -106, 0);
+    glRotatef(0.8, 1, 0, 0);
+    glScalef(20, 20, 2);
+    
+    glBegin(GL_QUADS);
+    glColor3ub(255,208, 0);
+   
+    
+        //Asignar la coordenada de textura 0,0 al vertice
+        glVertex3f(-1.0f, -1.0f, 0);
+        //Asignar la coordenada de textura 1,0 al vertice
+        glVertex3f(1.0f, -1.0f, 0);
+        //Asignar la coordenada de textura 1,1 al vertice
+        glVertex3f(1.0f, 1.0f, 0);
+        //Asignar la coordenada de textura 0,1 al vertice
+        glVertex3f(-1.0f, 1.0f, 0);
+    
+    glEnd();
+    char displaycadena[200]="";
+    string cadena = "";
+    
+    sprintf(displaycadena, "%s","Objetivo");
+    
+    draw3dString(GLUT_STROKE_MONO_ROMAN,displaycadena,0.0, 0.0, 2.0);
+    
+    glColor3ub(255, 255, 255);
+    glPopMatrix();
+    glutPostRedisplay();
+}
 void dibujaBackground()
 {
     glPushMatrix();
@@ -1353,64 +1443,21 @@ void reinicio(){
  * Inicializa variables y modelos
  ****************************************************************************/
 void init(){
-    /*
-    alListenerfv(AL_POSITION,listenerPos);
-    alListenerfv(AL_VELOCITY,listenerVel);
-    alListenerfv(AL_ORIENTATION,listenerOri);
     
-    alGetError(); // clear any error messages
-    
-    // Generate buffers, or else no sound will happen!
-    alGenBuffers(NUM_BUFFERS, buffer);
-    
-    if(alGetError() != AL_NO_ERROR)
+    //Initialize SDL
+    if( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_AUDIO ) < 0 )
     {
-        printf("- Error creating buffers !!\n");
-        exit(1);
-    }
-    else
-    {
-        printf("init() - No errors yet.");
+        printf( "SDL could not initialize! SDL Error: %s\n", SDL_GetError() );
+        success = false;
     }
     
-
-    
-    loadWAVFile("c.wav", &format, &data, &size, &freq);
-    alBufferData(buffer[0],format,data,size,freq);
-    alutUnloadWAV(format,data,size,freq);
-    
-    alutLoadWAVFile("b.wav",&format,&data,&size,&freq);
-    alBufferData(buffer[1],format,data,size,freq);
-    alutUnloadWAV(format,data,size,freq);
-    */
-    //alGetError(); /* clear error */
-    /*
-    alGenSources(NUM_SOURCES, source);
-    
-    if(alGetError() != AL_NO_ERROR)
+    //Initialize SDL_mixer
+    if( Mix_OpenAudio( 44100, MIX_DEFAULT_FORMAT, 2, 2048 ) < 0 )
     {
-        printf("- Error creating sources !!\n");
-        exit(2);
-    }
-    else
-    {
-        printf("init - no errors after alGenSources\n");
+        printf( "SDL_mixer could not initialize! SDL_mixer Error: %s\n", Mix_GetError() );
+        success = false;
     }
     
-    alSourcef(source[0],AL_PITCH,1.0f);
-    alSourcef(source[0],AL_GAIN,1.0f);
-    alSourcefv(source[0],AL_POSITION,source0Pos);
-    alSourcefv(source[0],AL_VELOCITY,source0Vel);
-    alSourcei(source[0],AL_BUFFER,buffer[0]);
-    alSourcei(source[0],AL_LOOPING,AL_FALSE);
-    
-    alSourcef(source[1],AL_PITCH,1.0f);
-    alSourcef(source[1],AL_GAIN,1.0f);
-    alSourcefv(source[1],AL_POSITION,source1Pos);
-    alSourcefv(source[1],AL_VELOCITY,source1Vel);
-    alSourcei(source[1],AL_BUFFER,buffer[1]);
-    alSourcei(source[1],AL_LOOPING,AL_TRUE);
-    */
     running = false;
     enteroGlobal = 0;
     
@@ -1526,20 +1573,25 @@ void myKeyboard(unsigned char theKey, int x, int y){
         case 'J':
             if (actualTexture == MAINMENU_TEXTURE) { // Si se encuentra en el menu principal
                 play = true;
+                Mix_HaltMusic();
                 actualTexture = LEVEL1; // Inicia nivel 1
             } else if (actualTexture == WINLEVEL1_TEXTURE) { // Si gana el nivel 1
                 play = true;
                 actualTexture = LEVEL2; // Inicia nivel 2
+                Mix_PlayMusic( gMusic, 0 );
             } else if (actualTexture == WINLEVEL2_TEXTURE) { // Si gana el nivel 2
                 play = true;
                 actualTexture = LEVEL3; // Inicial nivel 3
+                Mix_PlayMusic( gMusic, 0 );
             } else if (actualTexture == GAMEOVER_TEXTURE) { // Si pierde
                 play = true;
                 start = false;
                 actualTexture = LEVEL1; // Vuelve a jugar nivel 1
+                Mix_PlayMusic( gMusic, 0 );
             } else if (actualTexture == COMPLETEGAME_TEXTURE) { // Si completa el juego
                 play = true;
                 start = false;
+                Mix_PlayMusic( gMusic, 0 );
                 reinicio(); // Vuelve a jugar nivel 1
             }
             
@@ -1563,6 +1615,7 @@ void myKeyboard(unsigned char theKey, int x, int y){
                 actualTexture = INSTRUCTIONS_TEXTURE;
             } else if (play && (actualTexture == LEVEL1 || actualTexture == LEVEL2 || actualTexture == LEVEL3)){
                 if (!finished){
+                    Mix_PlayMusic( gMusic, 0 );
                     start = true;
                     running = true;
                 }
@@ -1578,6 +1631,7 @@ void myKeyboard(unsigned char theKey, int x, int y){
         case 'P':
         case 'p':
             if (play && (actualTexture == LEVEL1 || actualTexture == LEVEL2 || actualTexture == LEVEL3)){
+                Mix_HaltMusic();
                 start = false;
                 running = false;
             }
@@ -1591,6 +1645,7 @@ void myKeyboard(unsigned char theKey, int x, int y){
             } else if (actualTexture == GAMEOVER_TEXTURE || actualTexture == COMPLETEGAME_TEXTURE) {
                 play = false;
                 start = false;
+                 Mix_PlayMusic( gMusic, 0 );
                 actualTexture = MAINMENU_TEXTURE;
                 vidastotal = 3;
             } else if (actualTexture == LEVEL1 || actualTexture == LEVEL2 || actualTexture == LEVEL3) {
@@ -1672,6 +1727,12 @@ void mySpecialKeyboard(int key, int x, int y) {
 void timer(int value)
 {
     if (running) {
+        
+        if (variableLightPosition < 5.0){
+            variableLightPosition+= 0.2;
+        } else {
+            variableLightPosition = 0.0;
+        }
         angulo = (angulo + 1) % 360;
         if (start && actualTexture == LEVEL1){
             movimientoBeer();
@@ -1702,7 +1763,10 @@ void timer(int value)
             play = false;
             actualTexture = GAMEOVER_TEXTURE;
             vidastotal = 3;
+            Mix_HaltMusic();
+            Mix_PlayChannel( 0, gameFail, 0 );
         }
+        
         
         
     }
@@ -1723,6 +1787,8 @@ void myDisplay()
     if (!play) {
         drawScene(actualTexture);
     } else if (play && actualTexture == LEVEL1){
+        
+        
         glPushMatrix();
         glRotatef(-0.8, 1, 0, 0);
         
@@ -1741,10 +1807,13 @@ void myDisplay()
         dibujaDrugDown();
         dibujaBeerUp();
         dibujaBeerDown();
+
         dibujaBusStop();
+
         dibujaPersonaje(posXPersonaje, posYPersonaje);
+
         vidas(vidastotal);
-        
+       // drawObjetivo();
         glPopMatrix();
         
     } else if (play && actualTexture == LEVEL2) {
@@ -1765,8 +1834,9 @@ void myDisplay()
         dibujaGunUp();
         dibujaGunDown();
         dibujaMan();
-        
+
         dibujaSemaforo();
+
         dibujaPersonaje(posXPersonaje, posYPersonaje);
         vidas(vidastotal);
         glPopMatrix();
@@ -1790,13 +1860,16 @@ void myDisplay()
         dibujaWhatsapp();
         dibujaFbDown();
         dibujaDrogger();
+
         dibujaEscuela();
+
         
         dibujaPersonaje(posXPersonaje, posYPersonaje);
         
         vidas(vidastotal);
         glPopMatrix();
     }
+
     glutSwapBuffers();
     
 }
@@ -1856,6 +1929,87 @@ void createMenus(){
     
 }
 
+bool loadMedia()
+{
+    //Loading success flag
+    bool success = true;
+    
+    //Load music
+    char rutamusica[200] = "";
+    
+    sprintf(rutamusica,"%s%s", fullPath.c_str() , "sounds/background.wav");
+    gMusic = Mix_LoadMUS(rutamusica);
+    if( gMusic == NULL )
+    {
+        printf( "Failed to load gmusic music! SDL_mixer Error: %s\n", Mix_GetError() );
+        success = false;
+    }
+    
+    //Load sound effects
+    sprintf(rutamusica,"%s%s", fullPath.c_str() , "sounds/gamefail.wav");
+    gameFail = Mix_LoadWAV(rutamusica);
+    if( gameFail == NULL )
+    {
+        printf( "Failed to load gamefail sound effect! SDL_mixer Error: %s\n", Mix_GetError() );
+        success = false;
+    }
+    
+    sprintf(rutamusica,"%s%s", fullPath.c_str() , "sounds/levelcomplete.wav");
+    levelcomplete = Mix_LoadWAV(rutamusica);
+    if( levelcomplete == NULL )
+    {
+        printf( "Failed to load levelcomplete sound effect! SDL_mixer Error: %s\n", Mix_GetError() );
+        success = false;
+    }
+    
+    sprintf(rutamusica,"%s%s", fullPath.c_str() , "sounds/gamewin.wav");
+    gamewin = Mix_LoadWAV(rutamusica);
+    if( gamewin == NULL )
+    {
+        printf( "Failed to load gamewin sound effect! SDL_mixer Error: %s\n", Mix_GetError() );
+        success = false;
+    }
+    
+    sprintf(rutamusica,"%s%s", fullPath.c_str() , "sounds/pierdevida.wav");
+    pierdevida = Mix_LoadWAV(rutamusica);
+    if( pierdevida == NULL )
+    {
+        printf( "Failed to load pierdevida sound effect! SDL_mixer Error: %s\n", Mix_GetError() );
+        success = false;
+    }
+
+    Mix_PlayMusic( gMusic, 0 );
+    
+    return success;
+}
+
+void close()
+{
+    
+    //Free the sound effects
+    Mix_FreeChunk( gamewin );
+    Mix_FreeChunk( gameFail );
+    Mix_FreeChunk( pierdevida );
+    Mix_FreeChunk( levelcomplete );
+    gamewin = NULL;
+    gameFail = NULL;
+    pierdevida = NULL;
+    levelcomplete = NULL;
+    
+    //Free the music
+    Mix_FreeMusic( gMusic );
+    gMusic = NULL;
+    
+
+    
+    //Quit SDL subsystems
+    Mix_Quit();
+    SDL_Quit();
+}
+
+
+
+
 int main(int argc, char *argv[])
 {
     //Find root path for files
@@ -1869,6 +2023,8 @@ int main(int argc, char *argv[])
     glutCreateWindow("Drogger");
     initRendering();
     init();
+    loadMedia();
+    //close();
     glutTimerFunc(100, timer, 1);
     glutDisplayFunc(myDisplay);
     glutKeyboardFunc(myKeyboard);

@@ -10,7 +10,9 @@
 		1A3619821C98FAB800E131F9 /* GLUT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A3619801C98FAB800E131F9 /* GLUT.framework */; };
 		1A3619831C98FAB800E131F9 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A3619811C98FAB800E131F9 /* OpenGL.framework */; };
 		1A7F530F1C99DEA700A600E4 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A7F530E1C99DEA700A600E4 /* main.cpp */; };
+		1A8E86151CC57541005D47E1 /* SDL2_mixer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A8E86141CC57541005D47E1 /* SDL2_mixer.framework */; };
 		1AD5EE2E1CBF5A8700DEE5D7 /* OpenAL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1AD5EE2D1CBF5A8700DEE5D7 /* OpenAL.framework */; };
+		1ADE6FE71CC55C1F007D5667 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1ADE6FE61CC55C1F007D5667 /* SDL2.framework */; };
 		1AE8B30F1CB1F85900042BEB /* glm_util.c in Sources */ = {isa = PBXBuildFile; fileRef = 1AE8B3031CB1F85900042BEB /* glm_util.c */; };
 		1AE8B3101CB1F85900042BEB /* glm.c in Sources */ = {isa = PBXBuildFile; fileRef = 1AE8B3041CB1F85900042BEB /* glm.c */; };
 		1AE8B3111CB1F85900042BEB /* glmimg_devil.c in Sources */ = {isa = PBXBuildFile; fileRef = 1AE8B3061CB1F85900042BEB /* glmimg_devil.c */; };
@@ -45,8 +47,10 @@
 		1A7F530E1C99DEA700A600E4 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		1A7F53101C99E32700A600E4 /* Patrick.mtl */ = {isa = PBXFileReference; lastKnownFileType = text; name = Patrick.mtl; path = objects/Patrick.mtl; sourceTree = "<group>"; };
 		1A7F53111C99E32700A600E4 /* Patrick.obj */ = {isa = PBXFileReference; lastKnownFileType = text; name = Patrick.obj; path = objects/Patrick.obj; sourceTree = "<group>"; };
+		1A8E86141CC57541005D47E1 /* SDL2_mixer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2_mixer.framework; path = ../../../../../../Library/Frameworks/SDL2_mixer.framework; sourceTree = "<group>"; };
 		1A9561771CA8D95F00387DC7 /* bustop.obj */ = {isa = PBXFileReference; lastKnownFileType = text; name = bustop.obj; path = objects/bustop.obj; sourceTree = "<group>"; };
 		1AD5EE2D1CBF5A8700DEE5D7 /* OpenAL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenAL.framework; path = System/Library/Frameworks/OpenAL.framework; sourceTree = SDKROOT; };
+		1ADE6FE61CC55C1F007D5667 /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2.framework; path = ../../../../../../Library/Frameworks/SDL2.framework; sourceTree = "<group>"; };
 		1AE094A01CBCC34400159505 /* Beer.mtl */ = {isa = PBXFileReference; lastKnownFileType = text; name = Beer.mtl; path = objects/Beer.mtl; sourceTree = "<group>"; };
 		1AE094A11CBCC34400159505 /* Beer.obj */ = {isa = PBXFileReference; lastKnownFileType = text; name = Beer.obj; path = objects/Beer.obj; sourceTree = "<group>"; };
 		1AE094A21CBCC89700159505 /* busstop2.obj */ = {isa = PBXFileReference; lastKnownFileType = text; name = busstop2.obj; path = objects/busstop2.obj; sourceTree = "<group>"; };
@@ -83,6 +87,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1A8E86151CC57541005D47E1 /* SDL2_mixer.framework in Frameworks */,
+				1ADE6FE71CC55C1F007D5667 /* SDL2.framework in Frameworks */,
 				1AD5EE2E1CBF5A8700DEE5D7 /* OpenAL.framework in Frameworks */,
 				1A3619821C98FAB800E131F9 /* GLUT.framework in Frameworks */,
 				1A3619831C98FAB800E131F9 /* OpenGL.framework in Frameworks */,
@@ -95,6 +101,8 @@
 		1A36196D1C98FAA600E131F9 = {
 			isa = PBXGroup;
 			children = (
+				1A8E86141CC57541005D47E1 /* SDL2_mixer.framework */,
+				1ADE6FE61CC55C1F007D5667 /* SDL2.framework */,
 				1AD5EE2D1CBF5A8700DEE5D7 /* OpenAL.framework */,
 				1A3619801C98FAB800E131F9 /* GLUT.framework */,
 				1A3619811C98FAB800E131F9 /* OpenGL.framework */,
@@ -325,6 +333,10 @@
 		1A36197E1C98FAA600E131F9 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(LOCAL_LIBRARY_DIR)/Frameworks",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -332,6 +344,10 @@
 		1A36197F1C98FAA600E131F9 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(LOCAL_LIBRARY_DIR)/Frameworks",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
