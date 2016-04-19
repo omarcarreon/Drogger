@@ -24,7 +24,6 @@ using namespace std;
 
 #include "SOIL.h"
 
-
 #include "SDL2/SDL.h"
 #include "SDL2_mixer/SDL_mixer.h"
 
@@ -70,6 +69,12 @@ static GLuint texName[TEXTURE_COUNT];
 #define LEVEL1 7
 #define LEVEL2 8
 #define LEVEL3 9
+#define OBJETIVO1 17
+#define OBJETIVO2 18
+#define OBJETIVO3 19
+#define VIDARESTANTE1 20
+#define VIDARESTANTE2 21
+#define VIDARESTANTE3 22
 
 int actualTexture = MAINMENU_TEXTURE; // Inicia juego con menu principal
 
@@ -192,10 +197,9 @@ void draw3dString (void *font, char *s, float x, float y, float z)
     unsigned int i;
     
     glPushMatrix();
-    glTranslatef(x, y, z);
-    
-    glScaled(1.0, 1.0, 1.0);
-    glLineWidth(1);
+    glTranslatef(x, y, 2.0);
+    glScaled(10.0, 10.0, 10.0);
+    glLineWidth(10);
     glColor3f(0.0, 0.0, 0.0);
     for (i = 0; i < s[i] != '\0'; i++)
     {
@@ -205,6 +209,54 @@ void draw3dString (void *font, char *s, float x, float y, float z)
     glPopMatrix();
 }
 
+void despliegaVidasRestantes(){
+    glPushMatrix();
+    glTranslated(5, -73, 1);
+    glScalef(9, 2, 0);
+    
+    //Habilitar el uso de texturas
+    glEnable(GL_TEXTURE_2D);
+    
+    
+    
+    //Elegir la textura
+    if (vidastotal == 1){
+         glBindTexture(GL_TEXTURE_2D, texName[VIDARESTANTE1]);
+    } else if (vidastotal == 2){
+         glBindTexture(GL_TEXTURE_2D, texName[VIDARESTANTE2]);
+    } else if (vidastotal == 3){
+         glBindTexture(GL_TEXTURE_2D, texName[VIDARESTANTE3]);
+        
+    }
+    
+    glBegin(GL_QUADS);
+    glColor3ub(255, 255, 255);
+    
+    glTexCoord2f(0.0f, 0.0f);
+    glVertex3f(-10.0f, -10.0f, 0);
+    
+    glTexCoord2f(1.0f, 0.0f);
+    glVertex3f(10.0f, -10.0f,0);
+    
+    glTexCoord2f(1.0f, 1.0f);
+    glVertex3f(10.0f, 10.0f, 0);
+    
+    glTexCoord2f(0.0f, 1.0f);
+    glVertex3f(-10.0f, 10.0f, 0);
+    
+    
+    glEnd();
+    glDisable(GL_TEXTURE_2D);
+    glColor3ub(255, 255, 255);
+    glPopMatrix();
+    glutPostRedisplay();
+}
+
+
+/*************************************
+ * Movimiento del hombre del nivel 2 *
+ * Se mueve horizontalmente          *
+ *************************************/
 void movimientoMan(){
     if (posXMan <= 140 && posXMan >= -140 && manAscending) {
         posXMan += 10;
@@ -222,9 +274,10 @@ void movimientoMan(){
     }
 }
 
-/********************************
-* Movimiento del modelo Beer
-********************************/
+/*******************************************
+* Movimiento del modelo de la cerveza (Beer)
+* Se mueve horizontalmente
+********************************************/
 void movimientoBeer() {
     if (posXBeerUp <= 140 && posXBeerUp >= -140 && beerAscending) {
         posXBeerUp += 7;
@@ -244,6 +297,7 @@ void movimientoBeer() {
 
 /********************************
  * Movimiento del modelo Drug
+ * Se mueve horizontalmente
  ********************************/
 void movimientoDrug() {
     if (posXDrugDown <= 140 && posXDrugDown >= -140 && drugAscending) {
@@ -264,6 +318,7 @@ void movimientoDrug() {
 
 /********************************
  * Movimiento del modelo Cigar
+ * Se mueve horizontalmente
  ********************************/
 void movimientoCigar() {
     if (posXCigarDown <= 140 && posXCigarDown >= -140 && cigarAscending) {
@@ -284,6 +339,7 @@ void movimientoCigar() {
 
 /********************************
  * Movimiento del modelo Gun
+ * Se mueve horizontalmente
  ********************************/
 void movimientoGun() {
     if (posXGunUp <= 140 && posXGunUp >= -140 && gunAscending) {
@@ -304,6 +360,7 @@ void movimientoGun() {
 
 /********************************
  * Movimiento del modelo Phone
+ * Se mueve horizontalmente
  ********************************/
 void movimientoPhone(){
     if (posXPhoneUp <= 140 && posXPhoneUp >= -140 && phoneAscending) {
@@ -322,9 +379,10 @@ void movimientoPhone(){
     }
 }
 
-/********************************
- * Movimiento del modelo Drogger
- ********************************/
+/*****************************************************************
+ * Movimiento del modelo Drogger ( personaje del tercer nivel
+ * Se mueve horizontalmente
+ *****************************************************************/
 void movimientoDrogger(){
     if (posXDrogger <= 140 && posXDrogger >= -140 && droggerAscending) {
         posXDrogger += 13;
@@ -344,6 +402,7 @@ void movimientoDrogger(){
 
 /**************************************
  * Movimiento del modelo FB (Facebook)
+ * Se mueve horizontalmente
  **************************************/
 void movimientoFb(){
     if (posXFbDown <= 140 && posXFbDown >= -140 && fbAscending) {
@@ -438,7 +497,7 @@ void initRendering()
     image = loadBMP(ruta);loadTexture(image,i++);
     
     
-    sprintf(ruta,"%s%s", fullPath.c_str() , "textures/heartfull.bmp");
+    sprintf(ruta,"%s%s", fullPath.c_str() , "textures/heart.bmp");
     LoadGLTextures(ruta,i++);
     
     sprintf(ruta,"%s%s", fullPath.c_str() , "textures/menu1.bmp");
@@ -459,11 +518,30 @@ void initRendering()
     sprintf(ruta,"%s%s", fullPath.c_str() , "textures/terminarJuego1.bmp");
     LoadGLTextures(ruta,COMPLETEGAME_TEXTURE);
     
+    
     sprintf(ruta,"%s%s", fullPath.c_str() , "textures/creditos1.bmp");
     LoadGLTextures(ruta,CREDITS_TEXTURE);
     
     sprintf(ruta,"%s%s", fullPath.c_str() , "textures/background.jpg");
     LoadGLTextures(ruta,14);
+    
+    sprintf(ruta,"%s%s", fullPath.c_str() , "textures/objetivo1.bmp");
+    LoadGLTextures(ruta,OBJETIVO1);
+    
+    sprintf(ruta,"%s%s", fullPath.c_str() , "textures/objetivo2.bmp");
+    LoadGLTextures(ruta,OBJETIVO2);
+    
+    sprintf(ruta,"%s%s", fullPath.c_str() , "textures/objetivo3.bmp");
+    LoadGLTextures(ruta,OBJETIVO3);
+    
+    sprintf(ruta,"%s%s", fullPath.c_str() , "textures/vidarestante1.bmp");
+    LoadGLTextures(ruta,VIDARESTANTE1);
+    
+    sprintf(ruta,"%s%s", fullPath.c_str() , "textures/vidarestante2.bmp");
+    LoadGLTextures(ruta,VIDARESTANTE2);
+    
+    sprintf(ruta,"%s%s", fullPath.c_str() , "textures/vidarestante3.bmp");
+    LoadGLTextures(ruta,VIDARESTANTE3);
     
     delete image;
 }
@@ -483,40 +561,6 @@ void reshape(int w, int h)
     gluLookAt(0, 0, 2.8, 0, 0, 0, 0, 5, 10);
     
 }
-// ****Genera el formato del timer ****//
-// ************************************//
-string formato(int i){
-    int seconds, minutes ,mili;
-    string cadena;
-    
-    mili = i%10;
-    minutes = floor((i/10)/60);
-    seconds = (i/10) - minutes * 60;
-    if (seconds <10){
-        cadena =to_string(minutes) + ":0" + to_string(seconds) + ":" + to_string(mili);
-    } else {
-        cadena = to_string(minutes) + ":" + to_string(seconds) + ":" + to_string(mili);
-    }
-    return cadena;
-}
-
-// ****** Dibuja timer ********//
-// ****************************//
-void displayTimer(){
-    
-    GLint x;
-    glPushMatrix();
-    char displaycadena[200]="";
-    string cadena = "";
-    cadena = formato(enteroGlobal);
-    
-    sprintf(displaycadena, "%s",cadena.c_str());
-    glColor3f(0.0, 0.0, 0.0);
-    draw3dString(GLUT_STROKE_MONO_ROMAN,displaycadena,7.0, 5.0, 0.1);
-    glPopMatrix();
-}
-
-
 
 
 /****************************************************************************
@@ -652,7 +696,7 @@ void dibujaPersonaje(double posX, double posY) {
 }
 
 /****************************************************************************
- * Colision del personaje con la pistola
+ * Colision del personaje con las pistolas
  ****************************************************************************/
 void colisionGun(){
     if (posYGunUp == posYPersonaje ){
@@ -701,7 +745,7 @@ void colisionMan(){
 }
 
 /****************************************************************************
- * Colision del personaje con la botella de cerveza
+ * Colision del personaje con las botellas de cerveza
  ****************************************************************************/
 void colisionBeer() {
     int offset = 5;
@@ -733,7 +777,7 @@ void colisionBeer() {
 }
 
 /****************************************************************************
- * Colision del personaje con la droga
+ * Colision del personaje con las drogas
  ****************************************************************************/
 void colisionDrug() {
     int offset = 15;
@@ -765,7 +809,7 @@ void colisionDrug() {
 }
 
 /****************************************************************************
- * Colision del personaje con el cigarro
+ * Colision del personaje con los cigarros
  ****************************************************************************/
 void colisionCigar() {
     int offset = 10;
@@ -818,7 +862,7 @@ void colisionBusStop() {
  ****************************************************************************/
 void colisionSemaforo() {
     if (posYPersonaje == 45){
-        if (posXPersonaje == 50) {
+        if (posXPersonaje >= -50 && posXPersonaje <=50) {
             play = false;
             Mix_HaltMusic();
             Mix_PlayChannel( 0, levelcomplete, 0 );
@@ -845,7 +889,7 @@ void colisionSchool() {
 }
 
 /****************************************************************************
- * Colision del personaje con el celular
+ * Colision del personaje con los celulares
  ****************************************************************************/
 void colisionPhone() {
     int offset = 5;
@@ -1255,7 +1299,7 @@ void vidas(int num) {
     glBindTexture(GL_TEXTURE_2D, texName[3]);
     
     glBegin(GL_QUADS);
-    glColor3ub(129,208, 0);
+    glColor3ub(255,255, 255);
     float offset = -0.5f;
     for (int i=0; i<num; i++) {
         //Asignar la coordenada de textura 0,0 al vertice
@@ -1319,36 +1363,53 @@ void drawScene(int scene)
 }
 
 void drawObjetivo() {
+
     glPushMatrix();
-    glTranslated(0, -106, 0);
+    glTranslated(50, -109, 0);
     glRotatef(0.8, 1, 0, 0);
-    glScalef(20, 20, 2);
+    glScalef(7, 1, 0);
+    
+    //Habilitar el uso de texturas
+    glEnable(GL_TEXTURE_2D);
+    
+    //Elegir la textura
+    if (actualTexture == LEVEL1){
+        glBindTexture(GL_TEXTURE_2D, texName[OBJETIVO1]);
+    } else if (actualTexture == LEVEL2){
+        glBindTexture(GL_TEXTURE_2D, texName[OBJETIVO2]);
+    } else if (actualTexture == LEVEL3){
+        glBindTexture(GL_TEXTURE_2D, texName[OBJETIVO3]);
+    }
+    
     
     glBegin(GL_QUADS);
-    glColor3ub(255,208, 0);
-   
-    
-        //Asignar la coordenada de textura 0,0 al vertice
-        glVertex3f(-1.0f, -1.0f, 0);
-        //Asignar la coordenada de textura 1,0 al vertice
-        glVertex3f(1.0f, -1.0f, 0);
-        //Asignar la coordenada de textura 1,1 al vertice
-        glVertex3f(1.0f, 1.0f, 0);
-        //Asignar la coordenada de textura 0,1 al vertice
-        glVertex3f(-1.0f, 1.0f, 0);
-    
-    glEnd();
-    char displaycadena[200]="";
-    string cadena = "";
-    
-    sprintf(displaycadena, "%s","Objetivo");
-    
-    draw3dString(GLUT_STROKE_MONO_ROMAN,displaycadena,0.0, 0.0, 2.0);
-    
     glColor3ub(255, 255, 255);
+    
+    glTexCoord2f(0.0f, 0.0f);
+    glVertex3f(-10.0f, -10.0f, 0);
+    
+    glTexCoord2f(1.0f, 0.0f);
+    glVertex3f(10.0f, -10.0f,0);
+    
+    glTexCoord2f(1.0f, 1.0f);
+    glVertex3f(10.0f, 10.0f, 0);
+    
+    glTexCoord2f(0.0f, 1.0f);
+    glVertex3f(-10.0f, 10.0f, 0);
+    
+   
+    glEnd();
+    glDisable(GL_TEXTURE_2D);
+     glColor3ub(255, 255, 255);
     glPopMatrix();
     glutPostRedisplay();
+    
 }
+
+
+/****************************************************************************
+ * Dibuja el background de los niveles 1,2 y 3
+ ****************************************************************************/
 void dibujaBackground()
 {
     glPushMatrix();
@@ -1388,10 +1449,12 @@ void dibujaBackground()
  * Reinicia el juego
  ****************************************************************************/
 void reinicio(){
+    // Reinicia en el nivel 1
     actualTexture = LEVEL1;
+    // Reinicia vidas
     vidastotal = 3;
    
-    // Posiciones de jugador y metas del nivel
+    // Reinicia Posiciones de jugador y metas del nivel
     posXPersonaje = 0.0, posYPersonaje = -85.0;
     posXBusStop = 0.0, posYBusStop = 120.0;
     posXSemaforo = 0.0, posYSemaforo = 120.0;
@@ -1399,12 +1462,12 @@ void reinicio(){
     
     
     // Obstaculos Nivel 1
-    // Determinan la direccion del movimiento
+    // Reinicia la direccion del movimiento de las drogas, cerveza y cigarros
     beerAscending = true;
     drugAscending = true;
     cigarAscending = true;
     
-    // Posiciones obstaculos nivel 1
+    // Reinicia Posiciones obstaculos nivel 1
     posXCigarUp = 0, posYCigarUp = -55.0;
     posXCigarDown = 0, posYCigarDown = -75.0;
     posXBeerUp = -140.0, posYBeerUp = 0.0;
@@ -1413,7 +1476,7 @@ void reinicio(){
     posXDrugDown = -130, posYDrugDown = 40;
     
     // Obstaculos Nivel 2
-    // Determinan la direccion del movimiento
+    // Reinicia la direccion del movimiento de la pistol y del hombre
     gunAscending = true;
     manAscending = true;
     // Posiciones obstaculos nivel 1
@@ -1422,7 +1485,7 @@ void reinicio(){
     posXMan = 0.0, posYMan = -60.0;
     
     // Obstaculos Nivel 3
-    // Determinan la direccion del movimiento
+    // Determinan la direccion del movimiento del logo de fb, whatsapp y de Drogger
     fbAscending = true;
     phoneAscending = true;
     droggerAscending = true;
@@ -1601,80 +1664,80 @@ void myKeyboard(unsigned char theKey, int x, int y){
             if (actualTexture == MAINMENU_TEXTURE) { // Si se encuentra en el menu principal
                 exit(0); // Sale del juego
             } else {
-                if (play && start) {
-                    if (posYPersonaje-10.0>=-85) {
-                        posYPersonaje -= 10.0;
+                if (play && start) { // si se encuentra en un nivel
+                    if (posYPersonaje-10.0>=-85) {  // si no ha llegado al limite inferior del tablero de juego
+                        posYPersonaje -= 10.0; // mueve personaje hacia abajo
                     }
                 }
             }
             
             break;
-        case 'I':
+        case 'I': // si presiona I o i
         case 'i':
-            if (!play && actualTexture == MAINMENU_TEXTURE) {
-                actualTexture = INSTRUCTIONS_TEXTURE;
-            } else if (play && (actualTexture == LEVEL1 || actualTexture == LEVEL2 || actualTexture == LEVEL3)){
+            if (!play && actualTexture == MAINMENU_TEXTURE) { // si esta en el menu principal
+                actualTexture = INSTRUCTIONS_TEXTURE; // despliega pantalla de Instrucciones
+            } else if (play && (actualTexture == LEVEL1 || actualTexture == LEVEL2 || actualTexture == LEVEL3)){ // si se encuentra en un nivel
                 if (!finished){
-                    Mix_PlayMusic( gMusic, 0 );
-                    start = true;
+                    Mix_PlayMusic( gMusic, 0 ); // reproduce musica de fondo
+                    start = true; // inicia juego
                     running = true;
                 }
             }
             
             break;
-        case 'C':
+        case 'C': // si presiona C o c
         case 'c':
-            if (!play && actualTexture == MAINMENU_TEXTURE) {
-                actualTexture = CREDITS_TEXTURE;
+            if (!play && actualTexture == MAINMENU_TEXTURE) { // si se encuentra en el menu principal
+                actualTexture = CREDITS_TEXTURE; // despliega pantalla de creditos
             }
             break;
-        case 'P':
+        case 'P': // si presiona P o p
         case 'p':
-            if (play && (actualTexture == LEVEL1 || actualTexture == LEVEL2 || actualTexture == LEVEL3)){
-                Mix_HaltMusic();
-                start = false;
+            if (play && (actualTexture == LEVEL1 || actualTexture == LEVEL2 || actualTexture == LEVEL3)){ // si se encuentra en un nivel
+                Mix_HaltMusic(); // detiene musica
+                start = false; // detiene juego
                 running = false;
             }
             
             break;
             
-        case 'R':
+        case 'R': // si presiona R o r
         case 'r':
-            if (actualTexture == INSTRUCTIONS_TEXTURE || actualTexture == CREDITS_TEXTURE) {
-                actualTexture = MAINMENU_TEXTURE;
-            } else if (actualTexture == GAMEOVER_TEXTURE || actualTexture == COMPLETEGAME_TEXTURE) {
-                play = false;
+            if (actualTexture == INSTRUCTIONS_TEXTURE || actualTexture == CREDITS_TEXTURE) { // si se encuentra en creditos o instrucciones
+                actualTexture = MAINMENU_TEXTURE; // regresa a menu principal
+            } else if (actualTexture == GAMEOVER_TEXTURE || actualTexture == COMPLETEGAME_TEXTURE) { // si se encuentra en pantalla de gameover o juego completo
+                play = false; // detiene juego
                 start = false;
-                 Mix_PlayMusic( gMusic, 0 );
-                actualTexture = MAINMENU_TEXTURE;
-                vidastotal = 3;
-            } else if (actualTexture == LEVEL1 || actualTexture == LEVEL2 || actualTexture == LEVEL3) {
+                 Mix_PlayMusic( gMusic, 0 ); // reproduce musica
+                actualTexture = MAINMENU_TEXTURE; // regresa a menu principal
+                vidastotal = 3; // reinicia vidas
+            } else if (actualTexture == LEVEL1 || actualTexture == LEVEL2 || actualTexture == LEVEL3) { // si se encuentra en un nivel
                 // reset
-                reinicio();
+                reinicio(); // reinicia juego, regresa a nivel 1
             }
             break;
-        case 'w':
+        case 'w': // si presiona W o w
         case 'W':
-            if (play && start){
-                if (posYPersonaje+10.0 <= 120){
-                    posYPersonaje += 10.0;
+            if (play && start){ // si se encuentra en un nivel del juego
+                if (posYPersonaje+10.0 <= 120){ // si no ha llegado al limite superior del tablero de juego
+                    posYPersonaje += 10.0; // mueve personaje hacia arriba
                 }
             }
             break;
-        case 'a':
+        case 'a': // si presiona A o a
         case 'A':
-            if (play && start){
-                if (posXPersonaje-10>=-140){
-                    posXPersonaje -= 10.0;
+            if (play && start){ // si se encuentra en un nivel del juego
+                if (posXPersonaje-10>=-140){ // si no ha llegado al limite izquierdo del tablero de juego
+                    posXPersonaje -= 10.0; // mueve personaje hacia la izquierda
                 }
             }
             
             break;
-        case 'd':
+        case 'd': // si presiona D o d
         case 'D':
-            if (play && start) {
-                if (posXPersonaje+10<=140) {
-                    posXPersonaje += 10.0;
+            if (play && start) { // si se encuentra en un nivel del juego
+                if (posXPersonaje+10<=140) { // si no ha llegado al limite derecho del tablero del juego
+                    posXPersonaje += 10.0; // mueve personaje hacia la derecha
                 }
             }
             break;
@@ -1786,11 +1849,15 @@ void myDisplay()
     
     if (!play) {
         drawScene(actualTexture);
+        if (actualTexture == COMPLETEGAME_TEXTURE){
+            despliegaVidasRestantes();
+        }
     } else if (play && actualTexture == LEVEL1){
         
         
         glPushMatrix();
         glRotatef(-0.8, 1, 0, 0);
+        
         
         dibujaBackground();
         
@@ -1813,7 +1880,8 @@ void myDisplay()
         dibujaPersonaje(posXPersonaje, posYPersonaje);
 
         vidas(vidastotal);
-       // drawObjetivo();
+        drawObjetivo();
+        
         glPopMatrix();
         
     } else if (play && actualTexture == LEVEL2) {
@@ -1839,6 +1907,8 @@ void myDisplay()
 
         dibujaPersonaje(posXPersonaje, posYPersonaje);
         vidas(vidastotal);
+        drawObjetivo();
+        
         glPopMatrix();
     } else if (play && actualTexture == LEVEL3){
         
@@ -1867,6 +1937,8 @@ void myDisplay()
         dibujaPersonaje(posXPersonaje, posYPersonaje);
         
         vidas(vidastotal);
+        drawObjetivo();
+        
         glPopMatrix();
     }
 
