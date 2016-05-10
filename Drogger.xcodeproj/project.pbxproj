@@ -42,6 +42,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		1A34BB961CE23D410095E367 /* light1.mtl */ = {isa = PBXFileReference; lastKnownFileType = text; name = light1.mtl; path = objects/light1.mtl; sourceTree = "<group>"; };
+		1A34BB971CE23D410095E367 /* light1.obj */ = {isa = PBXFileReference; lastKnownFileType = text; name = light1.obj; path = objects/light1.obj; sourceTree = "<group>"; };
 		1A3619761C98FAA600E131F9 /* Drogger */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Drogger; sourceTree = BUILT_PRODUCTS_DIR; };
 		1A3619801C98FAB800E131F9 /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = System/Library/Frameworks/GLUT.framework; sourceTree = SDKROOT; };
 		1A3619811C98FAB800E131F9 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
@@ -51,6 +53,10 @@
 		1A8E86141CC57541005D47E1 /* SDL2_mixer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2_mixer.framework; path = ../../../../../../Library/Frameworks/SDL2_mixer.framework; sourceTree = "<group>"; };
 		1A8E86181CC6089A005D47E1 /* SDL2_ttf.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2_ttf.framework; path = ../../../../../../Library/Frameworks/SDL2_ttf.framework; sourceTree = "<group>"; };
 		1A9561771CA8D95F00387DC7 /* bustop.obj */ = {isa = PBXFileReference; lastKnownFileType = text; name = bustop.obj; path = objects/bustop.obj; sourceTree = "<group>"; };
+		1AC2EF821CDBA28A00206CF4 /* kid5.mtl */ = {isa = PBXFileReference; lastKnownFileType = text; name = kid5.mtl; path = objects/kid5.mtl; sourceTree = "<group>"; };
+		1AC2EF831CDBA28A00206CF4 /* kid5.obj */ = {isa = PBXFileReference; lastKnownFileType = text; name = kid5.obj; path = objects/kid5.obj; sourceTree = "<group>"; };
+		1AC2EF841CDBA28A00206CF4 /* kid6.mtl */ = {isa = PBXFileReference; lastKnownFileType = text; name = kid6.mtl; path = objects/kid6.mtl; sourceTree = "<group>"; };
+		1AC2EF851CDBA28A00206CF4 /* kid6.obj */ = {isa = PBXFileReference; lastKnownFileType = text; name = kid6.obj; path = objects/kid6.obj; sourceTree = "<group>"; };
 		1AD5EE2D1CBF5A8700DEE5D7 /* OpenAL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenAL.framework; path = System/Library/Frameworks/OpenAL.framework; sourceTree = SDKROOT; };
 		1ADE6FE61CC55C1F007D5667 /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2.framework; path = ../../../../../../Library/Frameworks/SDL2.framework; sourceTree = "<group>"; };
 		1AE094A01CBCC34400159505 /* Beer.mtl */ = {isa = PBXFileReference; lastKnownFileType = text; name = Beer.mtl; path = objects/Beer.mtl; sourceTree = "<group>"; };
@@ -158,6 +164,12 @@
 		1A7F530C1C99DDFF00A600E4 /* objects */ = {
 			isa = PBXGroup;
 			children = (
+				1A34BB961CE23D410095E367 /* light1.mtl */,
+				1A34BB971CE23D410095E367 /* light1.obj */,
+				1AC2EF821CDBA28A00206CF4 /* kid5.mtl */,
+				1AC2EF831CDBA28A00206CF4 /* kid5.obj */,
+				1AC2EF841CDBA28A00206CF4 /* kid6.mtl */,
+				1AC2EF851CDBA28A00206CF4 /* kid6.obj */,
 				1AE094A51CBDF5EB00159505 /* gun.mtl */,
 				1AE094A61CBDF5EB00159505 /* gun.obj */,
 				1AE094A31CBDC47500159505 /* cigar.mtl */,

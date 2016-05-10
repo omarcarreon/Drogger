@@ -55,6 +55,7 @@ bool success = true;
 #define PHONE_MOD 12
 #define FB_MOD 13
 #define WHATSAPP_MOD 14
+#define PLAYER2_MOD 15
 
 // Cantidad de texturas y sus ids
 const int TEXTURE_COUNT=36;
@@ -137,7 +138,7 @@ bool finished = false; // Indica si el juego termino
 bool start = false; // Indica si esta corriendo el juego
 bool play = false; // Indica si inicia o encuentra en un nivel del juego
 bool running = false; // Indica si timer esta corriendo
-
+bool changeSprite = true; // Se utiliza para cambiar la imagen del personaje
 GLfloat variableLightPosition = 0.0f;
 
 //le borramos el exceso para solo obtener el Path padre
@@ -687,8 +688,19 @@ void dibujaPersonaje(double posX, double posY) {
     glTranslated(posXPersonaje, posYPersonaje, 0);
     glRotatef(0.8, 1, 0, 0);
     glRotatef(180, 0,1, 0);
-    glScaled(20, 20, 0.1);
-    glmDraw(&models[PLAYER_MOD], GLM_COLOR);
+    
+
+    if (changeSprite){
+        glScaled(20, 20, 0.1);
+        glmDraw(&models[PLAYER_MOD], GLM_COLOR);
+    } else {
+        glTranslated(-20, 0, 0);
+        glScaled(30, 30, 0.1);
+        glmDraw(&models[PLAYER2_MOD], GLM_COLOR);
+    }
+    
+    
+
     
     
     glPopMatrix();
@@ -1003,20 +1015,21 @@ void dibujaBusStop() {
  ****************************************************************************/
 void dibujaSemaforo() {
     glClear(GL_DEPTH_BUFFER_BIT);
-    glEnable(GL_LIGHTING);
-    glEnable(GL_LIGHT0);
-    lucesMaterial(1);
+    //glEnable(GL_LIGHTING);
+    //glEnable(GL_LIGHT0);
+    //lucesMaterial(1);
     glPushMatrix();
 
     glTranslated(posXSemaforo,posYSemaforo, 0);
     glRotatef(0.8, 1, 0, 0);
+    
     glScaled(70,120, 1);
     
-    glmDraw(&models[SEMAFORO_MOD], GLM_COLOR | GL_TEXTURE | GLM_SMOOTH);
+    glmDraw(&models[SEMAFORO_MOD], GLM_COLOR | GLM_SMOOTH);
     
     glPopMatrix();
-    glDisable(GL_LIGHT0);
-    glDisable(GL_LIGHTING);
+    //glDisable(GL_LIGHT0);
+    //glDisable(GL_LIGHTING);
 }
 
 /****************************************************************************
@@ -1449,8 +1462,6 @@ void dibujaBackground()
  * Reinicia el juego
  ****************************************************************************/
 void reinicio(){
-    // Reinicia en el nivel 1
-    actualTexture = LEVEL1;
     // Reinicia vidas
     vidastotal = 3;
    
@@ -1539,11 +1550,17 @@ void init(){
     glmUnitize(&models[DROGGER_MOD]);
     glmVertexNormals(&models[DROGGER_MOD], 90.0, GL_TRUE);
     
-    // Personaje
-    ruta = fullPath + "objects/kid5.obj";
+    // Personaje Estado 1
+    ruta = fullPath + "objects/kid.obj";
     models[PLAYER_MOD] = *glmReadOBJ(ruta.c_str());
     glmUnitize(&models[PLAYER_MOD]);
     glmVertexNormals(&models[PLAYER_MOD], 90.0, GL_TRUE);
+    
+    // Personaje Estado 2
+    ruta = fullPath + "objects/kid6.obj";
+    models[PLAYER2_MOD] = *glmReadOBJ(ruta.c_str());
+    glmUnitize(&models[PLAYER2_MOD]);
+    glmVertexNormals(&models[PLAYER2_MOD], 90.0, GL_TRUE);
     
     //busstop
     ruta = fullPath + "objects/busstop2.obj";
@@ -1656,6 +1673,7 @@ void myKeyboard(unsigned char theKey, int x, int y){
                 start = false;
                 Mix_PlayMusic( gMusic, 0 );
                 reinicio(); // Vuelve a jugar nivel 1
+                actualTexture = LEVEL1;
             }
             
             break;
@@ -1667,7 +1685,9 @@ void myKeyboard(unsigned char theKey, int x, int y){
                 if (play && start) { // si se encuentra en un nivel
                     if (posYPersonaje-10.0>=-85) {  // si no ha llegado al limite inferior del tablero de juego
                         posYPersonaje -= 10.0; // mueve personaje hacia abajo
+                        changeSprite = !changeSprite;
                     }
+                    
                 }
             }
             
@@ -1714,6 +1734,7 @@ void myKeyboard(unsigned char theKey, int x, int y){
             } else if (actualTexture == LEVEL1 || actualTexture == LEVEL2 || actualTexture == LEVEL3) { // si se encuentra en un nivel
                 // reset
                 reinicio(); // reinicia juego, regresa a nivel 1
+                actualTexture = LEVEL1;
             }
             break;
         case 'w': // si presiona W o w
@@ -1721,6 +1742,7 @@ void myKeyboard(unsigned char theKey, int x, int y){
             if (play && start){ // si se encuentra en un nivel del juego
                 if (posYPersonaje+10.0 <= 120){ // si no ha llegado al limite superior del tablero de juego
                     posYPersonaje += 10.0; // mueve personaje hacia arriba
+                    changeSprite = !changeSprite;
                 }
             }
             break;
@@ -1729,6 +1751,7 @@ void myKeyboard(unsigned char theKey, int x, int y){
             if (play && start){ // si se encuentra en un nivel del juego
                 if (posXPersonaje-10>=-140){ // si no ha llegado al limite izquierdo del tablero de juego
                     posXPersonaje -= 10.0; // mueve personaje hacia la izquierda
+                    changeSprite = !changeSprite;
                 }
             }
             
@@ -1738,7 +1761,19 @@ void myKeyboard(unsigned char theKey, int x, int y){
             if (play && start) { // si se encuentra en un nivel del juego
                 if (posXPersonaje+10<=140) { // si no ha llegado al limite derecho del tablero del juego
                     posXPersonaje += 10.0; // mueve personaje hacia la derecha
+                    changeSprite = !changeSprite;
                 }
+            }
+            break;
+        case 'm':
+        case 'M':
+            if (actualTexture == LEVEL1 || actualTexture == LEVEL2 || actualTexture == LEVEL3) { // si se encuentra en un nivel
+                // reset
+                reinicio(); // reinicia juego
+                play = false;
+                start = false;
+                
+                actualTexture = MAINMENU_TEXTURE; // regresa al menu principal
             }
             break;
         case 27:
@@ -1960,6 +1995,7 @@ void myMenu(int entryID)
             break;
         case 2:
             reinicio();
+            actualTexture = LEVEL1;
             break;
         case 3:
             start = false;
