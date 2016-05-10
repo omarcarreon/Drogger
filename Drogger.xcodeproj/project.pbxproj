@@ -11,7 +11,6 @@
 		1A3619831C98FAB800E131F9 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A3619811C98FAB800E131F9 /* OpenGL.framework */; };
 		1A7F530F1C99DEA700A600E4 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1A7F530E1C99DEA700A600E4 /* main.cpp */; };
 		1A8E86151CC57541005D47E1 /* SDL2_mixer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A8E86141CC57541005D47E1 /* SDL2_mixer.framework */; };
-		1A8E86191CC6089A005D47E1 /* SDL2_ttf.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A8E86181CC6089A005D47E1 /* SDL2_ttf.framework */; };
 		1AD5EE2E1CBF5A8700DEE5D7 /* OpenAL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1AD5EE2D1CBF5A8700DEE5D7 /* OpenAL.framework */; };
 		1ADE6FE71CC55C1F007D5667 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1ADE6FE61CC55C1F007D5667 /* SDL2.framework */; };
 		1AE8B30F1CB1F85900042BEB /* glm_util.c in Sources */ = {isa = PBXBuildFile; fileRef = 1AE8B3031CB1F85900042BEB /* glm_util.c */; };
@@ -95,7 +94,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1A8E86191CC6089A005D47E1 /* SDL2_ttf.framework in Frameworks */,
 				1A8E86151CC57541005D47E1 /* SDL2_mixer.framework in Frameworks */,
 				1ADE6FE71CC55C1F007D5667 /* SDL2.framework in Frameworks */,
 				1AD5EE2E1CBF5A8700DEE5D7 /* OpenAL.framework in Frameworks */,
